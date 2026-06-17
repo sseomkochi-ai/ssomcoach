@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>썸코치 · 썸 온도부터 답장까지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --ink:#160F22; --ink2:#211735; --ink3:#2C2042;
+    --blush:#FF6F91; --peach:#FFB36B; --rose:#FF9DB6;
+    --cream:#F6EEF4; --muted:#9E92B6; --line:rgba(255,255,255,.09);
+  }
+  body{
+    font-family:'Noto Sans KR',system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:
+      radial-gradient(1100px 560px at 50% -12%, rgba(255,111,145,.24), transparent 60%),
+      radial-gradient(820px 480px at 108% 2%, rgba(255,179,107,.14), transparent 55%),
+      var(--ink);
+    color:var(--cream); min-height:100vh;
+    display:flex; justify-content:center; padding:30px 16px 70px;
+  }
+  .wrap{ width:100%; max-width:470px; }
+  .logo{ font-family:'Jua',sans-serif; font-size:30px; display:flex; align-items:center; gap:8px; letter-spacing:-.5px; }
+  .tagline{ font-family:'Jua',sans-serif; font-size:29px; margin:14px 0 6px; line-height:1.22; letter-spacing:-.5px; font-weight:400; }
+  .tagline span{ background:linear-gradient(90deg,var(--blush),var(--peach)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub{ color:var(--muted); font-size:14.5px; line-height:1.5; margin:0 0 22px; font-weight:300; }
+  .panel{ background:var(--ink2); border:1px solid var(--line); border-radius:22px; padding:20px 18px; }
+  .lbl{ display:block; font-size:13px; color:var(--muted); margin:0 0 9px; font-weight:500; }
+  .lbl.mt{ margin-top:18px; }
+  .pills{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pill{ font-family:inherit; font-size:13.5px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); padding:9px 14px; border-radius:999px; cursor:pointer; transition:transform .12s, box-shadow .2s, background .2s; }
+  .pill:hover{ transform:translateY(-1px); }
+  .pill.on{ background:linear-gradient(90deg,var(--blush),var(--peach)); color:#160F22; font-weight:700; border-color:transparent; box-shadow:0 6px 18px rgba(255,111,145,.28); }
+  .ta{ width:100%; min-height:128px; resize:vertical; margin-top:2px; padding:13px 14px; font-family:inherit; font-size:15px; line-height:1.55; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:14px; transition:border .2s, box-shadow .2s; }
+  .ta::placeholder{ color:#6F6488; }
+  .ta:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
+  .memo{ width:100%; margin-top:14px; padding:12px 14px; font-family:inherit; font-size:14px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:14px; transition:border .2s, box-shadow .2s; }
+  .memo::placeholder{ color:#6F6488; }
+  .memo:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
+  .quota{ font-size:12.5px; color:var(--muted); text-align:center; margin:18px 0 10px; }
+  .quota b{ color:var(--rose); font-weight:700; }
+  .cta{ width:100%; font-family:'Jua',sans-serif; font-size:17px; letter-spacing:-.3px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:16px; padding:15px; cursor:pointer; transition:transform .12s, box-shadow .2s, filter .2s; box-shadow:0 10px 26px rgba(255,111,145,.3); }
+  .cta:hover{ transform:translateY(-2px); }
+  .cta:active{ transform:translateY(0); }
+  .cta:disabled{ filter:grayscale(.5) brightness(.8); cursor:not-allowed; transform:none; box-shadow:none; }
+  .error{ margin-top:16px; background:rgba(255,111,145,.1); border:1px solid rgba(255,111,145,.3); color:var(--rose); font-size:13.5px; padding:12px 14px; border-radius:12px; line-height:1.5; }
+  .typing{ display:flex; gap:6px; align-items:center; background:var(--ink3); width:fit-content; padding:14px 18px; border-radius:18px 18px 18px 4px; margin-top:18px; }
+  .typing span{ width:8px; height:8px; border-radius:50%; background:var(--muted); animation:bnc 1.2s infinite ease-in-out; }
+  .typing span:nth-child(2){ animation-delay:.18s; } .typing span:nth-child(3){ animation-delay:.36s; }
+  @keyframes bnc{ 0%,60%,100%{ transform:translateY(0); opacity:.4 } 30%{ transform:translateY(-6px); opacity:1 } }
+  @keyframes scin{ from{ opacity:0; transform:translateY(12px) } to{ opacity:1; transform:translateY(0) } }
+  .score{ position:relative; border-radius:22px; padding:22px 20px 18px; margin-top:18px; overflow:hidden; background:linear-gradient(135deg,#FF6F91,#FF8FA3 45%,#FFB36B); color:#160F22; box-shadow:0 14px 40px rgba(255,111,145,.35); animation:scin .5s both; }
+  .score::after{ content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(circle at 82% -10%, rgba(255,255,255,.4), transparent 45%); }
+  .score > *{ position:relative; }
+  .score-top{ display:flex; align-items:center; gap:7px; font-family:'Jua',sans-serif; font-size:15px; opacity:.92; }
+  .score-num{ font-family:'Jua',sans-serif; font-size:64px; line-height:1; margin:6px 0 2px; letter-spacing:-1px; }
+  .score-num small{ font-size:22px; opacity:.55; font-family:'Noto Sans KR',sans-serif; font-weight:700; }
+  .temp{ font-family:'Jua',sans-serif; font-size:19px; margin-bottom:14px; }
+  .bar{ position:relative; height:12px; border-radius:999px; background:rgba(22,15,34,.18); margin:4px 0 6px; }
+  .bar-fill{ position:absolute; left:0; top:0; bottom:0; border-radius:999px; background:rgba(22,15,34,.82); width:0; transition:width .9s cubic-bezier(.2,.7,.3,1); }
+  .bar-ends{ display:flex; justify-content:space-between; font-size:14px; opacity:.75; }
+  .verdict{ font-size:14.5px; font-weight:500; line-height:1.5; margin:15px 0 12px; }
+  .signals{ display:flex; flex-direction:column; gap:7px; }
+  .signal{ font-size:13px; background:rgba(255,255,255,.36); border-radius:10px; padding:8px 11px; line-height:1.45; }
+  .watermark{ display:flex; justify-content:space-between; align-items:center; margin-top:15px; padding-top:13px; border-top:1px solid rgba(22,15,34,.16); }
+  .wm-name{ font-family:'Jua',sans-serif; font-size:13.5px; }
+  .share{ font-family:inherit; font-weight:700; font-size:12.5px; color:#160F22; background:rgba(255,255,255,.62); border:none; padding:8px 13px; border-radius:999px; cursor:pointer; transition:background .2s; }
+  .share:hover{ background:rgba(255,255,255,.88); }
+  .share-hint{ text-align:center; font-size:11.5px; color:var(--muted); margin-top:9px; }
+  .res-head{ font-size:14px; color:var(--muted); margin:24px 2px 12px; font-weight:500; }
+  .card{ background:var(--ink2); border:1px solid var(--line); border-radius:18px; padding:15px 15px 13px; margin-bottom:12px; animation:scin .45s both cubic-bezier(.2,.7,.3,1); }
+  .card-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; }
+  .tag{ font-size:12px; font-weight:700; color:#160F22; background:linear-gradient(90deg,var(--rose),var(--peach)); padding:4px 11px; border-radius:999px; }
+  .copy{ font-family:inherit; font-size:12.5px; color:var(--muted); background:transparent; border:1px solid var(--line); padding:6px 11px; border-radius:999px; cursor:pointer; transition:color .2s, border .2s; }
+  .copy:hover{ color:var(--cream); border-color:var(--rose); }
+  .copy.done{ color:var(--rose); border-color:var(--rose); }
+  .bubble{ background:linear-gradient(135deg,var(--blush),var(--peach)); color:#160F22; font-size:15px; line-height:1.55; font-weight:500; padding:13px 15px; border-radius:16px 16px 4px 16px; white-space:pre-wrap; word-break:break-word; }
+  .tip{ font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5; }
+  .gate{ margin-top:22px; background:var(--ink2); border:1px solid rgba(255,111,145,.28); border-radius:20px; padding:24px 18px; text-align:center; }
+  .gate-ic{ font-size:30px; margin-bottom:8px; }
+  .gate h3{ font-family:'Jua',sans-serif; font-size:18px; margin:0 0 6px; font-weight:400; }
+  .gate p{ color:var(--muted); font-size:13.5px; margin:0 0 16px; line-height:1.5; }
+  .reset{ font-family:inherit; font-size:12.5px; color:var(--muted); background:none; border:none; text-decoration:underline; cursor:pointer; margin-top:14px; }
+  .premium{ margin-top:26px; border-radius:20px; padding:1px; background:linear-gradient(135deg,rgba(255,111,145,.5),rgba(255,179,107,.5)); }
+  .premium-in{ background:var(--ink2); border-radius:19px; padding:20px 18px; }
+  .premium-h{ font-family:'Jua',sans-serif; font-size:16px; margin-bottom:12px; }
+  .feat{ display:flex; gap:9px; align-items:flex-start; font-size:13.5px; color:var(--cream); margin:9px 0; line-height:1.45; }
+  .feat .dot{ color:var(--rose); flex:none; margin-top:1px; }
+  .pbtn{ width:100%; margin-top:14px; font-family:'Jua',sans-serif; font-size:14.5px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:13px; padding:12px; cursor:pointer; }
+  .note{ text-align:center; color:#6F6488; font-size:11.5px; margin-top:22px; line-height:1.55; }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none!important; transition:none!important } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">💘 썸코치</div>
+    <h1 class="tagline">썸 온도부터 답장까지,<br><span>3초</span> 만에.</h1>
+    <p class="sub">주고받은 카톡을 붙여넣으면, 호감도 분석과 보낼 답장을 한 번에 만들어 줘요.</p>
+  </header>
+
+  <section class="panel">
+    <span class="lbl">상대와 나는?</span>
+    <div class="pills" id="relPills"></div>
+
+    <span class="lbl mt">주고받은 대화</span>
+    <textarea class="ta" id="convo"></textarea>
+
+    <span class="lbl mt">어떤 느낌으로 답할까?</span>
+    <div class="pills" id="tonePills"></div>
+
+    <input class="memo" id="memo" placeholder="상황 메모 (선택) — 예: 자연스럽게 만나자고 하고 싶어요" />
+
+    <div class="quota" id="quota"></div>
+    <button class="cta" id="cta" disabled>썸 온도 + 답장 분석하기</button>
+  </section>
+
+  <div class="error" id="error" style="display:none"></div>
+  <div id="results"></div>
+
+  <section class="premium">
+    <div class="premium-in">
+      <div class="premium-h">✨ 프리미엄이 되면</div>
+      <div class="feat"><span class="dot">◆</span> 썸 온도 분석 무제한 — 대화가 바뀔 때마다</div>
+      <div class="feat"><span class="dot">◆</span> 더 깊은 해석 — 상대 성향·다음 단계 전략까지</div>
+      <div class="feat"><span class="dot">◆</span> 상황별 시나리오 — 첫 연락 · 데이트 신청 · 화해 · 재회</div>
+      <button class="pbtn">프리미엄 구독하기 · 월 2,900원</button>
+    </div>
+  </section>
+
+  <p class="note">재미로 보는 분석이에요 🙂 맛보기 버전이라, 앞으로 더 정교해져요.</p>
+</div>
+
+<script>
+(function () {
+  var REL = ["썸 타는 중", "짝사랑", "소개팅·매칭앱", "연인", "친구에서 썸으로"];
+  var TONES = ["자연스럽게", "다정하게", "가볍게 ㅋㅋ", "살짝 밀당", "진솔하게"];
+  var selRel = REL[0], selTone = TONES[0], left = 3, loading = false;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  var convoEl = document.getElementById("convo");
+  var memoEl = document.getElementById("memo");
+  var btn = document.getElementById("cta");
+  var quotaEl = document.getElementById("quota");
+  var errorEl = document.getElementById("error");
+  var resultsEl = document.getElementById("results");
+
+  convoEl.placeholder = "카톡 대화를 붙여넣어 주세요.\n예)\n상대: 오늘 뭐 했어?\n나: 그냥 집에 있었지 ㅎㅎ 너는?\n상대: 나도! 갑자기 네 생각나서 ㅋㅋ";
+
+  function buildPills(containerId, items, isSel, setSel) {
+    var c = document.getElementById(containerId);
+    items.forEach(function (it) {
+      var b = el("button", "pill" + (isSel(it) ? " on" : ""), it);
+      b.onclick = function () {
+        setSel(it);
+        Array.prototype.forEach.call(c.children, function (ch) {
+          ch.classList.toggle("on", ch.textContent === it);
+        });
+      };
+      c.appendChild(b);
+    });
+  }
+  buildPills("relPills", REL, function (x) { return x === selRel; }, function (v) { selRel = v; });
+  buildPills("tonePills", TONES, function (x) { return x === selTone; }, function (v) { selTone = v; });
+
+  function updateQuota() { quotaEl.innerHTML = "무료 체험 <b>" + left + "회</b> 남음"; }
+  updateQuota();
+
+  function setLoading(v) {
+    loading = v;
+    btn.disabled = v || !convoEl.value.trim();
+    btn.textContent = v ? "AI가 대화 읽는 중…" : "썸 온도 + 답장 분석하기";
+  }
+  convoEl.addEventListener("input", function () { if (!loading) btn.disabled = !convoEl.value.trim(); });
+
+  function showGate() {
+    resultsEl.innerHTML = "";
+    var g = el("section", "gate");
+    g.appendChild(el("div", "gate-ic", "🔒"));
+    g.appendChild(el("h3", null, "무료 체험을 모두 썼어요"));
+    var p = el("p"); p.innerHTML = "프리미엄으로 업그레이드하면 무제한 분석과<br>더 깊은 해석을 받을 수 있어요.";
+    g.appendChild(p);
+    g.appendChild(el("button", "pbtn", "프리미엄 구독하기 · 월 2,900원"));
+    var rb = el("button", "reset", "프로토타입: 체험 다시 채우기");
+    rb.onclick = function () { left = 3; updateQuota(); resultsEl.innerHTML = ""; };
+    g.appendChild(rb);
+    resultsEl.appendChild(g);
+  }
+
+  btn.onclick = function () {
+    if (left <= 0) { showGate(); return; }
+    if (!convoEl.value.trim() || loading) return;
+    errorEl.style.display = "none";
+    resultsEl.innerHTML = "";
+    setLoading(true);
+    var typing = el("div", "typing");
+    typing.innerHTML = "<span></span><span></span><span></span>";
+    resultsEl.appendChild(typing);
+
+    fetch("/api/analyze", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ relationship: selRel, convo: convoEl.value, tone: selTone, memo: memoEl.value })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        resultsEl.innerHTML = "";
+        if (!res.ok || res.d.error || !res.d.replies || !res.d.replies.length) {
+          throw new Error(res.d.error || "fail");
+        }
+        renderResult(res.d);
+        left--; updateQuota();
+      })
+      .catch(function () {
+        resultsEl.innerHTML = "";
+        errorEl.textContent = "분석을 만들지 못했어요. 대화를 조금 더 붙여넣고 다시 시도해 주세요.";
+        errorEl.style.display = "block";
+      })
+      .then(function () { setLoading(false); });
+  };
+
+  function renderResult(d) {
+    var card = el("section", "score");
+    card.appendChild(el("div", "score-top", "💘 썸 온도"));
+    var num = el("div", "score-num");
+    var numText = document.createTextNode("0");
+    num.appendChild(numText);
+    num.appendChild(el("small", null, "/100"));
+    card.appendChild(num);
+    card.appendChild(el("div", "temp", d.temperature || ""));
+    var bar = el("div", "bar");
+    var fill = el("div", "bar-fill");
+    bar.appendChild(fill);
+    card.appendChild(bar);
+    var ends = el("div", "bar-ends");
+    ends.innerHTML = "<span>🧊</span><span>🔥</span>";
+    card.appendChild(ends);
+    if (d.verdict) card.appendChild(el("div", "verdict", d.verdict));
+    if (d.signals && d.signals.length) {
+      var sg = el("div", "signals");
+      d.signals.forEach(function (s) { sg.appendChild(el("div", "signal", "· " + s)); });
+      card.appendChild(sg);
+    }
+    var wm = el("div", "watermark");
+    wm.appendChild(el("span", "wm-name", "💘 썸코치"));
+    var share = el("button", "share", "🔗 결과 복사");
+    share.onclick = function () {
+      var t = "내 썸 온도는 " + d.score + "점! " + (d.temperature || "") + "\n\"" + (d.verdict || "") + "\"\n\n— 썸코치에서 분석함";
+      try { navigator.clipboard.writeText(t); } catch (e) {}
+      share.textContent = "✓ 복사됨";
+      setTimeout(function () { share.textContent = "🔗 결과 복사"; }, 1700);
+    };
+    wm.appendChild(share);
+    card.appendChild(wm);
+    resultsEl.appendChild(card);
+    resultsEl.appendChild(el("p", "share-hint", "📸 이 카드를 캡처해서 친구에게 공유해보세요"));
+
+    var target = Math.max(0, Math.min(100, parseInt(d.score, 10) || 0));
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { numText.nodeValue = target; fill.style.width = target + "%"; }
+    else {
+      setTimeout(function () { fill.style.width = target + "%"; }, 30);
+      var cur = 0, stepv = Math.max(1, Math.round(target / 28));
+      var iv = setInterval(function () {
+        cur += stepv;
+        if (cur >= target) { cur = target; clearInterval(iv); }
+        numText.nodeValue = cur;
+      }, 28);
+    }
+
+    resultsEl.appendChild(el("div", "res-head", "이렇게 답해보는 건 어때요?"));
+    d.replies.slice(0, 3).forEach(function (rep, i) {
+      var c = el("div", "card");
+      c.style.animationDelay = (i * 0.09) + "s";
+      var ctop = el("div", "card-top");
+      ctop.appendChild(el("span", "tag", rep.label || ""));
+      var cp = el("button", "copy", "복사");
+      cp.onclick = function () {
+        try { navigator.clipboard.writeText(rep.message || ""); } catch (e) {}
+        cp.textContent = "✓ 복사됨"; cp.classList.add("done");
+        setTimeout(function () { cp.textContent = "복사"; cp.classList.remove("done"); }, 1500);
+      };
+      ctop.appendChild(cp);
+      c.appendChild(ctop);
+      c.appendChild(el("div", "bubble", rep.message || ""));
+      if (rep.tip) c.appendChild(el("div", "tip", "💡 " + rep.tip));
+      resultsEl.appendChild(c);
+    });
+  }
+})();
+</script>
+</body>
+</html>
