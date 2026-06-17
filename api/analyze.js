@@ -1,7 +1,7 @@
 // 이 파일은 GitHub 저장소의 api/analyze.js 위치에 있어야 합니다.
 // 손님(브라우저)이 직접 AI를 부르지 않고, 이 서버가 키를 들고 대신 요청합니다.
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "POST only" });
     return;
