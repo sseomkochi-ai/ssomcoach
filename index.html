@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+<script src="https://js.tosspayments.com/v1/payment"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   *{ box-sizing:border-box; margin:0; padding:0; }
@@ -27,18 +28,17 @@
     display:flex; justify-content:center; padding:26px 16px 40px;
   }
   .wrap{ width:100%; max-width:470px; }
-
-  /* ===== HERO ===== */
+  .banner{ border-radius:14px; padding:13px 15px; margin-bottom:16px; font-size:13.5px; font-weight:500; line-height:1.5; }
+  .banner.ok{ background:linear-gradient(135deg,rgba(255,111,145,.2),rgba(255,179,107,.2)); border:1px solid rgba(255,179,107,.45); color:var(--cream); }
+  .banner.bad{ background:rgba(255,111,145,.1); border:1px solid rgba(255,111,145,.3); color:var(--rose); }
   .hero{ text-align:center; padding:10px 4px 22px; }
-  .eyebrow{ display:inline-block; font-size:12px; font-weight:700; letter-spacing:.2px; color:var(--rose);
-    background:rgba(255,111,145,.12); border:1px solid rgba(255,111,145,.25); padding:6px 13px; border-radius:999px; margin-bottom:16px; }
+  .eyebrow{ display:inline-block; font-size:12px; font-weight:700; letter-spacing:.2px; color:var(--rose); background:rgba(255,111,145,.12); border:1px solid rgba(255,111,145,.25); padding:6px 13px; border-radius:999px; margin-bottom:16px; }
   .logo{ font-family:'Jua',sans-serif; font-size:26px; letter-spacing:-.5px; opacity:.85; margin-bottom:8px; }
   .tagline{ font-family:'Jua',sans-serif; font-size:33px; line-height:1.24; letter-spacing:-.6px; font-weight:400; }
   .tagline span{ background:linear-gradient(90deg,var(--blush),var(--peach)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
   .sub{ color:var(--muted); font-size:14.5px; line-height:1.55; margin:12px auto 0; font-weight:300; max-width:340px; }
   .scroll-cue{ margin-top:18px; font-size:12.5px; color:var(--muted); animation:floaty 2s ease-in-out infinite; }
   @keyframes floaty{ 0%,100%{ transform:translateY(0); opacity:.6 } 50%{ transform:translateY(4px); opacity:1 } }
-
   .panel{ background:var(--ink2); border:1px solid var(--line); border-radius:22px; padding:20px 18px; box-shadow:0 18px 50px rgba(0,0,0,.25); }
   .lbl{ display:block; font-size:13px; color:var(--muted); margin:0 0 9px; font-weight:500; }
   .lbl.mt{ margin-top:18px; }
@@ -96,7 +96,6 @@
   .gate-ic{ font-size:30px; margin-bottom:8px; }
   .gate h3{ font-family:'Jua',sans-serif; font-size:18px; margin:0 0 6px; font-weight:400; }
   .gate p{ color:var(--muted); font-size:13.5px; margin:0 0 16px; line-height:1.5; }
-  .reset{ font-family:inherit; font-size:12.5px; color:var(--muted); background:none; border:none; text-decoration:underline; cursor:pointer; margin-top:14px; }
   .premium{ margin-top:26px; border-radius:20px; padding:1px; background:linear-gradient(135deg,rgba(255,111,145,.5),rgba(255,179,107,.5)); }
   .premium-in{ background:var(--ink2); border-radius:19px; padding:20px 18px; }
   .premium-h{ font-family:'Jua',sans-serif; font-size:16px; margin-bottom:4px; }
@@ -104,6 +103,7 @@
   .feat{ display:flex; gap:9px; align-items:flex-start; font-size:13.5px; color:var(--cream); margin:9px 0; line-height:1.45; }
   .feat .dot{ color:var(--rose); flex:none; margin-top:1px; }
   .pbtn{ width:100%; margin-top:14px; font-family:'Jua',sans-serif; font-size:14.5px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:13px; padding:13px; cursor:pointer; }
+  .pbtn:disabled{ filter:grayscale(.4) brightness(.85); cursor:default; }
   .foot{ text-align:center; color:#6F6488; font-size:11.5px; margin-top:28px; line-height:1.7; }
   .foot a{ color:#8A7EA6; text-decoration:underline; cursor:pointer; }
   @media (prefers-reduced-motion: reduce){ *{ animation:none!important; transition:none!important } }
@@ -111,6 +111,8 @@
 </head>
 <body>
 <div class="wrap">
+  <div id="banner"></div>
+
   <header class="hero">
     <div class="eyebrow">💘 2030 연애 카톡 AI</div>
     <div class="logo">썸코치</div>
@@ -145,21 +147,26 @@
       <div class="feat"><span class="dot">◆</span> 썸 온도 분석 무제한 — 대화가 바뀔 때마다</div>
       <div class="feat"><span class="dot">◆</span> 더 깊은 해석 — 상대 성향·다음 단계 전략까지</div>
       <div class="feat"><span class="dot">◆</span> 상황별 시나리오 — 첫 연락 · 데이트 신청 · 화해 · 재회</div>
-      <button class="pbtn" id="premiumBtn">프리미엄 시작하기</button>
+      <button class="pbtn" id="premiumBtn">프리미엄 시작하기 · 2,900원</button>
     </div>
   </section>
 
   <div class="foot">
     재미로 보는 분석이에요 🙂<br>
-    © 썸코치 · <a id="comingSoon">문의</a>
+    © 썸코치
   </div>
 </div>
 
 <script>
 (function () {
+  // ===== 설정 (가격을 바꾸려면 여기 + api/confirm.js 둘 다 같은 숫자로) =====
+  var CLIENT_KEY = "test_ck_DpexMgkW36ZxveM1dkBb3GbR5ozO"; // 라이브 전환 시 라이브 클라이언트 키로 교체
+  var PRICE = 2900;
+
   var REL = ["썸 타는 중", "짝사랑", "소개팅·매칭앱", "연인", "친구에서 썸으로"];
   var TONES = ["자연스럽게", "다정하게", "가볍게 ㅋㅋ", "살짝 밀당", "진솔하게"];
   var selRel = REL[0], selTone = TONES[0], left = 3, loading = false;
+  var premium = false, premiumExp = null;
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -174,6 +181,8 @@
   var quotaEl = document.getElementById("quota");
   var errorEl = document.getElementById("error");
   var resultsEl = document.getElementById("results");
+  var bannerEl = document.getElementById("banner");
+  var premiumBtn = document.getElementById("premiumBtn");
 
   convoEl.placeholder = "카톡 대화를 붙여넣어 주세요.\n예)\n상대: 오늘 뭐 했어?\n나: 그냥 집에 있었지 ㅎㅎ 너는?\n상대: 나도! 갑자기 네 생각나서 ㅋㅋ";
 
@@ -183,9 +192,7 @@
       var b = el("button", "pill" + (isSel(it) ? " on" : ""), it);
       b.onclick = function () {
         setSel(it);
-        Array.prototype.forEach.call(c.children, function (ch) {
-          ch.classList.toggle("on", ch.textContent === it);
-        });
+        Array.prototype.forEach.call(c.children, function (ch) { ch.classList.toggle("on", ch.textContent === it); });
       };
       c.appendChild(b);
     });
@@ -193,8 +200,28 @@
   buildPills("relPills", REL, function (x) { return x === selRel; }, function (v) { selRel = v; });
   buildPills("tonePills", TONES, function (x) { return x === selTone; }, function (v) { selTone = v; });
 
-  function updateQuota() { quotaEl.innerHTML = "무료 체험 <b>" + left + "회</b> 남음"; }
-  updateQuota();
+  function updateQuota() {
+    if (premium) {
+      var d = premiumExp ? new Date(premiumExp).toLocaleDateString("ko-KR") : "";
+      quotaEl.innerHTML = "✨ <b>프리미엄 이용 중</b>" + (d ? " · " + d + "까지" : "");
+    } else {
+      quotaEl.innerHTML = "무료 체험 <b>" + left + "회</b> 남음";
+    }
+  }
+
+  function setPremium(exp) {
+    premium = true; premiumExp = exp;
+    updateQuota();
+    premiumBtn.textContent = "✨ 프리미엄 이용 중";
+    premiumBtn.disabled = true;
+  }
+
+  function showBanner(msg, type) {
+    bannerEl.innerHTML = "";
+    var b = el("div", "banner " + (type === "ok" ? "ok" : "bad"), msg);
+    bannerEl.appendChild(b);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function setLoading(v) {
     loading = v;
@@ -203,29 +230,99 @@
   }
   convoEl.addEventListener("input", function () { if (!loading) btn.disabled = !convoEl.value.trim(); });
 
+  // ===== 결제 =====
+  function startPayment() {
+    if (premium) { showBanner("이미 프리미엄을 이용 중이에요 :)", "ok"); return; }
+    if (typeof TossPayments === "undefined") { showBanner("결제 모듈을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.", "bad"); return; }
+    try {
+      var tp = TossPayments(CLIENT_KEY);
+      var orderId = "ssom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+      tp.requestPayment("카드", {
+        amount: PRICE,
+        orderId: orderId,
+        orderName: "썸코치 30일 이용권",
+        successUrl: location.origin + "/",
+        failUrl: location.origin + "/?pay=fail"
+      }).catch(function () { /* 사용자가 결제창을 닫음 — 무시 */ });
+    } catch (e) {
+      showBanner("결제를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.", "bad");
+    }
+  }
+  premiumBtn.onclick = startPayment;
+
+  function confirmPayment(paymentKey, orderId, amount) {
+    fetch("/api/confirm", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ paymentKey: paymentKey, orderId: orderId, amount: amount })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        cleanUrl();
+        if (res.ok && res.d.ok && res.d.token) {
+          try { localStorage.setItem("ssom_token", res.d.token); } catch (e) {}
+          setPremium(res.d.expiresAt);
+          showBanner("🎉 프리미엄이 활성화됐어요! 이제 무제한으로 분석할 수 있어요.", "ok");
+        } else {
+          showBanner("결제 확인에 실패했어요" + (res.d && res.d.error ? " (" + res.d.error + ")" : "") + ".", "bad");
+        }
+      })
+      .catch(function () { cleanUrl(); showBanner("결제 확인 중 오류가 났어요.", "bad"); });
+  }
+
+  function checkExistingPremium() {
+    var token = null;
+    try { token = localStorage.getItem("ssom_token"); } catch (e) {}
+    if (!token) return;
+    fetch("/api/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ token: token })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.premium) { setPremium(d.expiresAt); }
+        else { try { localStorage.removeItem("ssom_token"); } catch (e) {} }
+      })
+      .catch(function () {});
+  }
+
+  function cleanUrl() {
+    try { history.replaceState({}, "", location.origin + location.pathname); } catch (e) {}
+  }
+
+  // 페이지 로드 시: 결제 리다이렉트 처리 / 기존 이용권 확인
+  (function handleLoad() {
+    var p = new URLSearchParams(location.search);
+    if (p.get("paymentKey") && p.get("orderId") && p.get("amount")) {
+      confirmPayment(p.get("paymentKey"), p.get("orderId"), p.get("amount"));
+    } else if (p.get("pay") === "fail" || p.get("code")) {
+      cleanUrl();
+      showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad");
+      checkExistingPremium();
+    } else {
+      checkExistingPremium();
+    }
+  })();
+
+  updateQuota();
+
+  // ===== 분석 =====
   function showGate() {
     resultsEl.innerHTML = "";
     var g = el("section", "gate");
     g.appendChild(el("div", "gate-ic", "🔒"));
     g.appendChild(el("h3", null, "무료 체험을 모두 썼어요"));
-    var p = el("p"); p.innerHTML = "프리미엄(30일 이용권)으로 업그레이드하면<br>무제한으로 분석할 수 있어요.";
-    g.appendChild(p);
-    g.appendChild(el("button", "pbtn", "프리미엄 시작하기"));
-    var rb = el("button", "reset", "프로토타입: 체험 다시 채우기");
-    rb.onclick = function () { left = 3; updateQuota(); resultsEl.innerHTML = ""; };
-    g.appendChild(rb);
+    var pp = el("p"); pp.innerHTML = "프리미엄(30일 이용권)으로 업그레이드하면<br>무제한으로 분석할 수 있어요.";
+    g.appendChild(pp);
+    var gb = el("button", "pbtn", "프리미엄 시작하기 · 2,900원");
+    gb.onclick = startPayment;
+    g.appendChild(gb);
     resultsEl.appendChild(g);
   }
 
-  document.getElementById("premiumBtn").onclick = function () {
-    alert("결제 기능은 곧 연결됩니다 :)");
-  };
-  document.getElementById("comingSoon").onclick = function () {
-    alert("문의: 준비 중이에요!");
-  };
-
   btn.onclick = function () {
-    if (left <= 0) { showGate(); return; }
+    if (!premium && left <= 0) { showGate(); return; }
     if (!convoEl.value.trim() || loading) return;
     errorEl.style.display = "none";
     resultsEl.innerHTML = "";
@@ -242,11 +339,9 @@
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         resultsEl.innerHTML = "";
-        if (!res.ok || res.d.error || !res.d.replies || !res.d.replies.length) {
-          throw new Error(res.d.error || "fail");
-        }
+        if (!res.ok || res.d.error || !res.d.replies || !res.d.replies.length) { throw new Error(res.d.error || "fail"); }
         renderResult(res.d);
-        left--; updateQuota();
+        if (!premium) { left--; updateQuota(); }
       })
       .catch(function () {
         resultsEl.innerHTML = "";
@@ -285,7 +380,6 @@
     wm.appendChild(host);
     card.appendChild(wm);
 
-    // actions: 이미지 저장 + 결과 복사
     var actions = el("div", "score-actions");
     if (typeof html2canvas !== "undefined") {
       var saveBtn = el("button", "act", "🖼️ 이미지 저장");
