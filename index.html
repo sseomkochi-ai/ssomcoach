@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>썸코치 · 썸 온도부터 답장까지</title>
-<meta name="description" content="썸·연애 카톡을 붙여넣으면 호감도 점수와 보낼 답장을 3초 만에. 2030 연애 카톡 AI, 썸코치." />
+<meta name="description" content="썸·연애 카톡을 붙여넣거나 캡처를 올리면 호감도 점수와 보낼 답장을 3초 만에. 2030 연애 카톡 AI, 썸코치." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%98%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -46,9 +46,19 @@
   .pill{ font-family:inherit; font-size:13.5px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); padding:9px 14px; border-radius:999px; cursor:pointer; transition:transform .12s, box-shadow .2s, background .2s; }
   .pill:hover{ transform:translateY(-1px); }
   .pill.on{ background:linear-gradient(90deg,var(--blush),var(--peach)); color:#160F22; font-weight:700; border-color:transparent; box-shadow:0 6px 18px rgba(255,111,145,.28); }
-  .ta{ width:100%; min-height:128px; resize:vertical; margin-top:2px; padding:13px 14px; font-family:inherit; font-size:15px; line-height:1.55; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:14px; transition:border .2s, box-shadow .2s; }
+  .modes{ display:flex; gap:6px; background:var(--ink3); padding:4px; border-radius:13px; }
+  .mode{ flex:1; font-family:inherit; font-size:13.5px; color:var(--muted); background:transparent; border:none; padding:10px; border-radius:9px; cursor:pointer; transition:.2s; }
+  .mode.on{ background:linear-gradient(90deg,var(--blush),var(--peach)); color:#160F22; font-weight:700; }
+  .ta{ width:100%; min-height:128px; resize:vertical; margin-top:10px; padding:13px 14px; font-family:inherit; font-size:15px; line-height:1.55; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:14px; transition:border .2s, box-shadow .2s; }
   .ta::placeholder{ color:#6F6488; }
   .ta:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
+  .upload{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; margin-top:10px; min-height:120px; border:1.5px dashed rgba(255,111,145,.4); border-radius:14px; color:var(--rose); font-size:14px; font-weight:600; cursor:pointer; background:var(--ink3); transition:.2s; text-align:center; padding:14px; }
+  .upload:hover{ border-color:var(--blush); background:rgba(255,111,145,.06); }
+  .upload small{ color:var(--muted); font-weight:400; font-size:11.5px; }
+  .preview{ margin-top:10px; }
+  .preview img{ width:100%; max-height:300px; object-fit:contain; border-radius:14px; background:var(--ink3); border:1px solid var(--line); }
+  .change{ width:100%; margin-top:10px; font-family:inherit; font-size:13px; color:var(--muted); background:transparent; border:1px solid var(--line); padding:10px; border-radius:11px; cursor:pointer; }
+  .change:hover{ color:var(--cream); border-color:var(--rose); }
   .memo{ width:100%; margin-top:14px; padding:12px 14px; font-family:inherit; font-size:14px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:14px; transition:border .2s, box-shadow .2s; }
   .memo::placeholder{ color:#6F6488; }
   .memo:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
@@ -105,7 +115,6 @@
   .pbtn{ width:100%; margin-top:14px; font-family:'Jua',sans-serif; font-size:14.5px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:13px; padding:13px; cursor:pointer; }
   .pbtn:disabled{ filter:grayscale(.4) brightness(.85); cursor:default; }
   .foot{ text-align:center; color:#6F6488; font-size:11.5px; margin-top:28px; line-height:1.7; }
-  .foot a{ color:#8A7EA6; text-decoration:underline; cursor:pointer; }
   @media (prefers-reduced-motion: reduce){ *{ animation:none!important; transition:none!important } }
 </style>
 </head>
@@ -117,7 +126,7 @@
     <div class="eyebrow">💘 2030 연애 카톡 AI</div>
     <div class="logo">썸코치</div>
     <h1 class="tagline">썸 온도 측정부터<br><span>답장 추천</span>까지, 3초.</h1>
-    <p class="sub">주고받은 카톡만 붙여넣으면 끝. 호감도 점수와 보낼 답장 3개를 바로 만들어 드려요.</p>
+    <p class="sub">카톡을 붙여넣거나 캡처를 올리면 끝. 호감도 점수와 보낼 답장 3개를 바로 만들어 드려요.</p>
     <div class="scroll-cue">아래에서 무료로 시작 ↓</div>
   </header>
 
@@ -125,8 +134,27 @@
     <span class="lbl">상대와 나는?</span>
     <div class="pills" id="relPills"></div>
 
-    <span class="lbl mt">주고받은 대화</span>
-    <textarea class="ta" id="convo"></textarea>
+    <span class="lbl mt">대화 입력 방법</span>
+    <div class="modes">
+      <button class="mode on" id="modeText" type="button">✍️ 직접 입력</button>
+      <button class="mode" id="modeImage" type="button">📷 카톡 캡처</button>
+    </div>
+
+    <div id="textInput">
+      <textarea class="ta" id="convo"></textarea>
+    </div>
+
+    <div id="imageInput" style="display:none">
+      <label class="upload" id="uploadLabel">
+        <span id="uploadText">📷 카톡 캡처 이미지 올리기</span>
+        <small>대화가 잘 보이게 캡처해 주세요</small>
+        <input type="file" accept="image/*" id="fileInput" hidden />
+      </label>
+      <div class="preview" id="preview" style="display:none">
+        <img id="previewImg" alt="미리보기" />
+        <button class="change" id="changeImg" type="button">다른 이미지 선택</button>
+      </div>
+    </div>
 
     <span class="lbl mt">어떤 느낌으로 답할까?</span>
     <div class="pills" id="tonePills"></div>
@@ -144,22 +172,19 @@
     <div class="premium-in">
       <div class="premium-h">✨ 프리미엄</div>
       <div class="premium-price">30일 이용권 · 무제한</div>
-      <div class="feat"><span class="dot">◆</span> 썸 온도 분석 무제한 — 대화가 바뀔 때마다</div>
+      <div class="feat"><span class="dot">◆</span> 썸 온도 분석 무제한 — 글자·캡처 모두</div>
       <div class="feat"><span class="dot">◆</span> 더 깊은 해석 — 상대 성향·다음 단계 전략까지</div>
       <div class="feat"><span class="dot">◆</span> 상황별 시나리오 — 첫 연락 · 데이트 신청 · 화해 · 재회</div>
       <button class="pbtn" id="premiumBtn">프리미엄 시작하기 · 2,900원</button>
     </div>
   </section>
 
-  <div class="foot">
-    재미로 보는 분석이에요 🙂<br>
-    © 썸코치
-  </div>
+  <div class="foot">재미로 보는 분석이에요 🙂<br>© 썸코치</div>
 </div>
 
 <script>
 (function () {
-  // ===== 설정 (가격을 바꾸려면 여기 + api/confirm.js 둘 다 같은 숫자로) =====
+  // ===== 설정 (가격 바꾸려면 여기 + api/confirm.js 둘 다 같은 숫자로) =====
   var CLIENT_KEY = "test_ck_DpexMgkW36ZxveM1dkBb3GbR5ozO"; // 라이브 전환 시 라이브 클라이언트 키로 교체
   var PRICE = 2900;
 
@@ -167,6 +192,7 @@
   var TONES = ["자연스럽게", "다정하게", "가볍게 ㅋㅋ", "살짝 밀당", "진솔하게"];
   var selRel = REL[0], selTone = TONES[0], left = 3, loading = false;
   var premium = false, premiumExp = null;
+  var mode = "text", imageData = null;
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -183,6 +209,16 @@
   var resultsEl = document.getElementById("results");
   var bannerEl = document.getElementById("banner");
   var premiumBtn = document.getElementById("premiumBtn");
+  var modeText = document.getElementById("modeText");
+  var modeImage = document.getElementById("modeImage");
+  var textInput = document.getElementById("textInput");
+  var imageInput = document.getElementById("imageInput");
+  var fileInput = document.getElementById("fileInput");
+  var uploadLabel = document.getElementById("uploadLabel");
+  var uploadText = document.getElementById("uploadText");
+  var preview = document.getElementById("preview");
+  var previewImg = document.getElementById("previewImg");
+  var changeImg = document.getElementById("changeImg");
 
   convoEl.placeholder = "카톡 대화를 붙여넣어 주세요.\n예)\n상대: 오늘 뭐 했어?\n나: 그냥 집에 있었지 ㅎㅎ 너는?\n상대: 나도! 갑자기 네 생각나서 ㅋㅋ";
 
@@ -218,17 +254,71 @@
 
   function showBanner(msg, type) {
     bannerEl.innerHTML = "";
-    var b = el("div", "banner " + (type === "ok" ? "ok" : "bad"), msg);
-    bannerEl.appendChild(b);
+    bannerEl.appendChild(el("div", "banner " + (type === "ok" ? "ok" : "bad"), msg));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  function updateCtaState() {
+    if (loading) { btn.disabled = true; return; }
+    if (mode === "text") btn.disabled = !convoEl.value.trim();
+    else btn.disabled = !imageData;
+  }
   function setLoading(v) {
     loading = v;
-    btn.disabled = v || !convoEl.value.trim();
     btn.textContent = v ? "AI가 대화 읽는 중…" : "썸 온도 + 답장 분석하기";
+    updateCtaState();
   }
-  convoEl.addEventListener("input", function () { if (!loading) btn.disabled = !convoEl.value.trim(); });
+  convoEl.addEventListener("input", updateCtaState);
+
+  // ===== 입력 모드 토글 =====
+  modeText.onclick = function () {
+    mode = "text"; modeText.classList.add("on"); modeImage.classList.remove("on");
+    textInput.style.display = ""; imageInput.style.display = "none"; updateCtaState();
+  };
+  modeImage.onclick = function () {
+    mode = "image"; modeImage.classList.add("on"); modeText.classList.remove("on");
+    textInput.style.display = "none"; imageInput.style.display = ""; updateCtaState();
+  };
+
+  // ===== 이미지 압축 후 base64 =====
+  function processImage(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var maxEdge = 1400;
+        var scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+        var cw = Math.round(img.width * scale), ch = Math.round(img.height * scale);
+        var canvas = document.createElement("canvas");
+        canvas.width = cw; canvas.height = ch;
+        canvas.getContext("2d").drawImage(img, 0, 0, cw, ch);
+        var dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        cb(dataUrl.split(",")[1], dataUrl);
+      };
+      img.onerror = function () { cb(null); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function () { cb(null); };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.onchange = function () {
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    uploadText.textContent = "이미지 처리 중…";
+    processImage(f, function (base64, dataUrl) {
+      if (!base64) { uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; showBanner("이미지를 불러오지 못했어요. 다른 이미지를 시도해 주세요.", "bad"); return; }
+      imageData = base64;
+      previewImg.src = dataUrl;
+      uploadLabel.style.display = "none";
+      preview.style.display = "";
+      updateCtaState();
+    });
+  };
+  changeImg.onclick = function () {
+    imageData = null; preview.style.display = "none"; uploadLabel.style.display = "";
+    uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; fileInput.value = ""; updateCtaState();
+  };
 
   // ===== 결제 =====
   function startPayment() {
@@ -243,19 +333,13 @@
         orderName: "썸코치 30일 이용권",
         successUrl: location.origin + "/",
         failUrl: location.origin + "/?pay=fail"
-      }).catch(function () { /* 사용자가 결제창을 닫음 — 무시 */ });
-    } catch (e) {
-      showBanner("결제를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.", "bad");
-    }
+      }).catch(function () {});
+    } catch (e) { showBanner("결제를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.", "bad"); }
   }
   premiumBtn.onclick = startPayment;
 
   function confirmPayment(paymentKey, orderId, amount) {
-    fetch("/api/confirm", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ paymentKey: paymentKey, orderId: orderId, amount: amount })
-    })
+    fetch("/api/confirm", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ paymentKey: paymentKey, orderId: orderId, amount: amount }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         cleanUrl();
@@ -263,9 +347,7 @@
           try { localStorage.setItem("ssom_token", res.d.token); } catch (e) {}
           setPremium(res.d.expiresAt);
           showBanner("🎉 프리미엄이 활성화됐어요! 이제 무제한으로 분석할 수 있어요.", "ok");
-        } else {
-          showBanner("결제 확인에 실패했어요" + (res.d && res.d.error ? " (" + res.d.error + ")" : "") + ".", "bad");
-        }
+        } else { showBanner("결제 확인에 실패했어요" + (res.d && res.d.error ? " (" + res.d.error + ")" : "") + ".", "bad"); }
       })
       .catch(function () { cleanUrl(); showBanner("결제 확인 중 오류가 났어요.", "bad"); });
   }
@@ -274,35 +356,21 @@
     var token = null;
     try { token = localStorage.getItem("ssom_token"); } catch (e) {}
     if (!token) return;
-    fetch("/api/verify", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ token: token })
-    })
+    fetch("/api/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: token }) })
       .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d && d.premium) { setPremium(d.expiresAt); }
-        else { try { localStorage.removeItem("ssom_token"); } catch (e) {} }
-      })
+      .then(function (d) { if (d && d.premium) { setPremium(d.expiresAt); } else { try { localStorage.removeItem("ssom_token"); } catch (e) {} } })
       .catch(function () {});
   }
 
-  function cleanUrl() {
-    try { history.replaceState({}, "", location.origin + location.pathname); } catch (e) {}
-  }
+  function cleanUrl() { try { history.replaceState({}, "", location.origin + location.pathname); } catch (e) {} }
 
-  // 페이지 로드 시: 결제 리다이렉트 처리 / 기존 이용권 확인
   (function handleLoad() {
     var p = new URLSearchParams(location.search);
     if (p.get("paymentKey") && p.get("orderId") && p.get("amount")) {
       confirmPayment(p.get("paymentKey"), p.get("orderId"), p.get("amount"));
     } else if (p.get("pay") === "fail" || p.get("code")) {
-      cleanUrl();
-      showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad");
-      checkExistingPremium();
-    } else {
-      checkExistingPremium();
-    }
+      cleanUrl(); showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad"); checkExistingPremium();
+    } else { checkExistingPremium(); }
   })();
 
   updateQuota();
@@ -323,7 +391,10 @@
 
   btn.onclick = function () {
     if (!premium && left <= 0) { showGate(); return; }
-    if (!convoEl.value.trim() || loading) return;
+    if (loading) return;
+    if (mode === "text" && !convoEl.value.trim()) return;
+    if (mode === "image" && !imageData) return;
+
     errorEl.style.display = "none";
     resultsEl.innerHTML = "";
     setLoading(true);
@@ -331,11 +402,11 @@
     typing.innerHTML = "<span></span><span></span><span></span>";
     resultsEl.appendChild(typing);
 
-    fetch("/api/analyze", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ relationship: selRel, convo: convoEl.value, tone: selTone, memo: memoEl.value })
-    })
+    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value };
+    if (mode === "image") { payload.image = imageData; payload.mediaType = "image/jpeg"; }
+    else { payload.convo = convoEl.value; }
+
+    fetch("/api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         resultsEl.innerHTML = "";
@@ -345,7 +416,7 @@
       })
       .catch(function () {
         resultsEl.innerHTML = "";
-        errorEl.textContent = "분석을 만들지 못했어요. 대화를 조금 더 붙여넣고 다시 시도해 주세요.";
+        errorEl.textContent = "분석을 만들지 못했어요. 대화나 캡처를 확인하고 다시 시도해 주세요.";
         errorEl.style.display = "block";
       })
       .then(function () { setLoading(false); });
@@ -387,9 +458,7 @@
         saveBtn.textContent = "저장 중…";
         html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true }).then(function (canvas) {
           var link = document.createElement("a");
-          link.download = "ssomcoach.png";
-          link.href = canvas.toDataURL("image/png");
-          link.click();
+          link.download = "ssomcoach.png"; link.href = canvas.toDataURL("image/png"); link.click();
           saveBtn.textContent = "🖼️ 이미지 저장";
         }).catch(function () { saveBtn.textContent = "🖼️ 이미지 저장"; });
       };
@@ -414,11 +483,7 @@
     else {
       setTimeout(function () { fill.style.width = target + "%"; }, 30);
       var cur = 0, stepv = Math.max(1, Math.round(target / 28));
-      var iv = setInterval(function () {
-        cur += stepv;
-        if (cur >= target) { cur = target; clearInterval(iv); }
-        numText.nodeValue = cur;
-      }, 28);
+      var iv = setInterval(function () { cur += stepv; if (cur >= target) { cur = target; clearInterval(iv); } numText.nodeValue = cur; }, 28);
     }
 
     resultsEl.appendChild(el("div", "res-head", "이렇게 답해보는 건 어때요?"));
