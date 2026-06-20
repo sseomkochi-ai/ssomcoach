@@ -10,18 +10,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
 <script src="https://js.tosspayments.com/v1/payment"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   *{ box-sizing:border-box; margin:0; padding:0; }
   :root{ --ink:#160F22; --ink2:#211735; --ink3:#2C2042; --blush:#FF6F91; --peach:#FFB36B; --rose:#FF9DB6; --cream:#F6EEF4; --muted:#9E92B6; --line:rgba(255,255,255,.09); }
   body{ font-family:'Noto Sans KR',system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     background:radial-gradient(1100px 580px at 50% -14%, rgba(255,111,145,.28), transparent 60%), radial-gradient(820px 480px at 110% 4%, rgba(255,179,107,.16), transparent 55%), var(--ink);
-    color:var(--cream); min-height:100vh; display:flex; justify-content:center; padding:26px 16px 40px; }
+    color:var(--cream); min-height:100vh; display:flex; justify-content:center; padding:18px 16px 40px; }
   .wrap{ width:100%; max-width:470px; }
+  .account{ display:flex; justify-content:flex-end; align-items:center; gap:9px; margin-bottom:10px; min-height:30px; }
+  .acc-email{ font-size:12px; color:var(--muted); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .acc-btn{ font-family:inherit; font-size:12px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); padding:7px 13px; border-radius:999px; cursor:pointer; transition:border .2s, color .2s; }
+  .acc-btn:hover{ border-color:var(--rose); color:var(--rose); }
   .banner{ border-radius:14px; padding:13px 15px; margin-bottom:16px; font-size:13.5px; font-weight:500; line-height:1.5; }
   .banner.ok{ background:linear-gradient(135deg,rgba(255,111,145,.2),rgba(255,179,107,.2)); border:1px solid rgba(255,179,107,.45); color:var(--cream); }
   .banner.bad{ background:rgba(255,111,145,.1); border:1px solid rgba(255,111,145,.3); color:var(--rose); }
-  .hero{ text-align:center; padding:10px 4px 22px; }
+  .hero{ text-align:center; padding:4px 4px 22px; }
   .eyebrow{ display:inline-block; font-size:12px; font-weight:700; color:var(--rose); background:rgba(255,111,145,.12); border:1px solid rgba(255,111,145,.25); padding:6px 13px; border-radius:999px; margin-bottom:16px; }
   .logo{ font-family:'Jua',sans-serif; font-size:26px; letter-spacing:-.5px; opacity:.85; margin-bottom:8px; }
   .tagline{ font-family:'Jua',sans-serif; font-size:33px; line-height:1.24; letter-spacing:-.6px; font-weight:400; }
@@ -113,11 +118,23 @@
   .pbtn{ width:100%; margin-top:14px; font-family:'Jua',sans-serif; font-size:14.5px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:13px; padding:13px; cursor:pointer; }
   .pbtn:disabled{ filter:grayscale(.4) brightness(.85); cursor:default; }
   .foot{ text-align:center; color:#6F6488; font-size:11.5px; margin-top:28px; line-height:1.7; }
+  .modal{ position:fixed; inset:0; background:rgba(10,6,18,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:100; }
+  .modal-card{ width:100%; max-width:360px; background:var(--ink2); border:1px solid var(--line); border-radius:20px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .modal-title{ font-family:'Jua',sans-serif; font-size:20px; margin-bottom:4px; text-align:center; }
+  .modal-sub{ font-size:12.5px; color:var(--muted); text-align:center; margin-bottom:16px; line-height:1.5; }
+  .modal-card input{ width:100%; margin-bottom:10px; padding:12px 14px; font-family:inherit; font-size:14px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:12px; }
+  .modal-card input::placeholder{ color:#6F6488; }
+  .modal-card input:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
+  .auth-err{ color:var(--rose); font-size:12.5px; min-height:16px; margin:2px 2px 8px; line-height:1.4; }
+  .auth-toggle{ text-align:center; font-size:12.5px; color:var(--muted); margin-top:14px; }
+  .auth-toggle a{ color:var(--rose); text-decoration:underline; cursor:pointer; margin-left:4px; }
+  .auth-close{ width:100%; margin-top:12px; background:none; border:none; color:var(--muted); font-size:12.5px; cursor:pointer; text-decoration:underline; }
   @media (prefers-reduced-motion: reduce){ *{ animation:none!important; transition:none!important } }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="account" id="account"></div>
   <div id="banner"></div>
 
   <header class="hero">
@@ -180,10 +197,28 @@
   <div class="foot">재미로 보는 분석이에요 🙂<br>© 썸코치</div>
 </div>
 
+<div class="modal" id="authModal" style="display:none">
+  <div class="modal-card">
+    <div class="modal-title" id="authTitle">로그인</div>
+    <div class="modal-sub" id="authSub">로그인하면 어느 기기서든 프리미엄이 유지돼요.</div>
+    <input id="authEmail" type="email" placeholder="이메일" autocomplete="email" />
+    <input id="authPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" />
+    <div class="auth-err" id="authErr"></div>
+    <button class="pbtn" id="authSubmit" style="margin-top:0">로그인</button>
+    <div class="auth-toggle"><span id="authToggleText">계정이 없으신가요?</span><a id="authToggle">회원가입</a></div>
+    <button class="auth-close" id="authClose">닫기</button>
+  </div>
+</div>
+
 <script>
 (function () {
+  // ===== 설정 =====
+  var SUPABASE_URL = "https://lgqhwadrfkheodlpgyew.supabase.co";
+  var SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxncWh3YWRyZmtoZW9kbHBneWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NDY2NjcsImV4cCI6MjA5NzUyMjY2N30.rCwpOJn9oMl_8rGV0kRA04w7Vmaz3vdV-Dom8XgFP4s";
   var CLIENT_KEY = "test_ck_DpexMgkW36ZxveM1dkBb3GbR5ozO"; // 라이브 전환 시 교체
   var PRICE = 2900;
+
+  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
   var REL = ["썸 타는 중", "짝사랑", "소개팅·매칭앱", "연인", "친구에서 썸으로"];
   var TONES = ["자연스럽게", "다정하게", "가볍게 ㅋㅋ", "살짝 밀당", "진솔하게"];
@@ -192,13 +227,9 @@
   var selRel = REL[0], selTone = TONES[0], selSituation = SITUATIONS[0];
   var left = 3, loading = false, premium = false, premiumExp = null;
   var mode = "text", imageData = null;
+  var currentUser = null, currentAccessToken = null, authMode = "login";
 
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
   var convoEl = document.getElementById("convo");
   var memoEl = document.getElementById("memo");
@@ -219,6 +250,17 @@
   var previewImg = document.getElementById("previewImg");
   var changeImg = document.getElementById("changeImg");
   var situationArea = document.getElementById("situationArea");
+  var account = document.getElementById("account");
+
+  var authModal = document.getElementById("authModal");
+  var authTitle = document.getElementById("authTitle");
+  var authEmail = document.getElementById("authEmail");
+  var authPw = document.getElementById("authPw");
+  var authErr = document.getElementById("authErr");
+  var authSubmit = document.getElementById("authSubmit");
+  var authToggle = document.getElementById("authToggle");
+  var authToggleText = document.getElementById("authToggleText");
+  var authClose = document.getElementById("authClose");
 
   convoEl.placeholder = "카톡 대화를 붙여넣어 주세요.\n예)\n상대: 오늘 뭐 했어?\n나: 그냥 집에 있었지 ㅎㅎ 너는?\n상대: 나도! 갑자기 네 생각나서 ㅋㅋ";
 
@@ -262,24 +304,9 @@
     } else { quotaEl.innerHTML = "무료 체험 <b>" + left + "회</b> 남음"; }
   }
 
-  function setPremium(exp) {
-    premium = true; premiumExp = exp;
-    updateQuota();
-    premiumBtn.textContent = "✨ 프리미엄 이용 중"; premiumBtn.disabled = true;
-    renderSituation();
-  }
+  function showBanner(msg, type) { bannerEl.innerHTML = ""; bannerEl.appendChild(el("div", "banner " + (type === "ok" ? "ok" : "bad"), msg)); window.scrollTo({ top: 0, behavior: "smooth" }); }
 
-  function showBanner(msg, type) {
-    bannerEl.innerHTML = "";
-    bannerEl.appendChild(el("div", "banner " + (type === "ok" ? "ok" : "bad"), msg));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function updateCtaState() {
-    if (loading) { btn.disabled = true; return; }
-    if (mode === "text") btn.disabled = !convoEl.value.trim();
-    else btn.disabled = !imageData;
-  }
+  function updateCtaState() { if (loading) { btn.disabled = true; return; } if (mode === "text") btn.disabled = !convoEl.value.trim(); else btn.disabled = !imageData; }
   function setLoading(v) { loading = v; btn.textContent = v ? "AI가 대화 읽는 중…" : "썸 온도 + 답장 분석하기"; updateCtaState(); }
   convoEl.addEventListener("input", updateCtaState);
 
@@ -295,8 +322,7 @@
         var cw = Math.round(img.width * scale), ch = Math.round(img.height * scale);
         var canvas = document.createElement("canvas"); canvas.width = cw; canvas.height = ch;
         canvas.getContext("2d").drawImage(img, 0, 0, cw, ch);
-        var dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-        cb(dataUrl.split(",")[1], dataUrl);
+        var dataUrl = canvas.toDataURL("image/jpeg", 0.85); cb(dataUrl.split(",")[1], dataUrl);
       };
       img.onerror = function () { cb(null); };
       img.src = e.target.result;
@@ -305,8 +331,7 @@
     reader.readAsDataURL(file);
   }
   fileInput.onchange = function () {
-    var f = fileInput.files && fileInput.files[0];
-    if (!f) return;
+    var f = fileInput.files && fileInput.files[0]; if (!f) return;
     uploadText.textContent = "이미지 처리 중…";
     processImage(f, function (base64, dataUrl) {
       if (!base64) { uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; showBanner("이미지를 불러오지 못했어요. 다른 이미지를 시도해 주세요.", "bad"); return; }
@@ -315,8 +340,83 @@
   };
   changeImg.onclick = function () { imageData = null; preview.style.display = "none"; uploadLabel.style.display = ""; uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; fileInput.value = ""; updateCtaState(); };
 
+  // ===== 계정/인증 =====
+  function renderAccount() {
+    account.innerHTML = "";
+    if (currentUser) {
+      account.appendChild(el("span", "acc-email", "📧 " + (currentUser.email || "로그인됨")));
+      var out = el("button", "acc-btn", "로그아웃");
+      out.onclick = function () { sb.auth.signOut(); };
+      account.appendChild(out);
+    } else {
+      var login = el("button", "acc-btn", "로그인 / 회원가입");
+      login.onclick = function () { openAuth(); };
+      account.appendChild(login);
+    }
+  }
+
+  function setAuthMode(m) {
+    authMode = m;
+    authTitle.textContent = m === "login" ? "로그인" : "회원가입";
+    authSubmit.textContent = m === "login" ? "로그인" : "가입하고 시작하기";
+    authToggleText.textContent = m === "login" ? "계정이 없으신가요?" : "이미 계정이 있으신가요?";
+    authToggle.textContent = m === "login" ? "회원가입" : "로그인";
+  }
+  function openAuth(msg) { authModal.style.display = "flex"; setAuthMode("login"); authErr.textContent = msg || ""; }
+  function closeAuth() { authModal.style.display = "none"; authEmail.value = ""; authPw.value = ""; authErr.textContent = ""; }
+  authToggle.onclick = function () { setAuthMode(authMode === "login" ? "signup" : "login"); authErr.textContent = ""; };
+  authClose.onclick = closeAuth;
+
+  function friendlyAuthErr(m) {
+    m = (m || "").toLowerCase();
+    if (m.indexOf("already registered") >= 0 || m.indexOf("already been registered") >= 0) return "이미 가입된 이메일이에요. 로그인해 주세요.";
+    if (m.indexOf("invalid login") >= 0) return "이메일 또는 비밀번호가 맞지 않아요.";
+    if (m.indexOf("password should be at least") >= 0) return "비밀번호는 6자 이상이어야 해요.";
+    if (m.indexOf("unable to validate email") >= 0 || m.indexOf("invalid email") >= 0) return "이메일 형식을 확인해 주세요.";
+    return "문제가 발생했어요. 잠시 후 다시 시도해 주세요.";
+  }
+
+  authSubmit.onclick = function () {
+    var email = authEmail.value.trim(), pw = authPw.value;
+    if (!email || pw.length < 6) { authErr.textContent = "이메일과 6자 이상 비밀번호를 입력해 주세요."; return; }
+    authErr.textContent = ""; authSubmit.disabled = true; authSubmit.textContent = "처리 중…";
+    var p = authMode === "login" ? sb.auth.signInWithPassword({ email: email, password: pw }) : sb.auth.signUp({ email: email, password: pw });
+    p.then(function (res) {
+      authSubmit.disabled = false; setAuthMode(authMode);
+      if (res.error) { authErr.textContent = friendlyAuthErr(res.error.message); return; }
+      var wasSignup = authMode === "signup";
+      closeAuth();
+      showBanner(wasSignup ? "가입 완료! 환영해요 🎉" : "로그인됐어요 :)", "ok");
+      // onAuthStateChange 가 프리미엄 상태를 갱신함
+    }).catch(function () { authSubmit.disabled = false; setAuthMode(authMode); authErr.textContent = "문제가 발생했어요. 잠시 후 다시 시도해 주세요."; });
+  };
+
+  function applySession(session) {
+    currentUser = session ? session.user : null;
+    currentAccessToken = session ? session.access_token : null;
+    renderAccount();
+    return refreshPremiumFromDB();
+  }
+
+  function refreshPremiumFromDB() {
+    if (!currentUser) { premium = false; premiumExp = null; updateQuota(); renderSituation(); return Promise.resolve(); }
+    return sb.from("subscriptions").select("expires_at").maybeSingle().then(function (q) {
+      if (q.data && new Date(q.data.expires_at).getTime() > Date.now()) { premium = true; premiumExp = new Date(q.data.expires_at).getTime(); }
+      else { premium = false; premiumExp = null; }
+      updateQuota(); renderSituation(); updatePremiumBtn();
+    }).catch(function () { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); });
+  }
+
+  function updatePremiumBtn() {
+    if (premium) { premiumBtn.textContent = "✨ 프리미엄 이용 중"; premiumBtn.disabled = true; }
+    else { premiumBtn.textContent = "프리미엄 시작하기 · 2,900원"; premiumBtn.disabled = false; }
+  }
+
+  sb.auth.onAuthStateChange(function (_event, session) { applySession(session); });
+
   // ===== 결제 =====
   function startPayment() {
+    if (!currentUser) { openAuth("결제하려면 먼저 로그인(또는 가입)해 주세요."); return; }
     if (premium) { showBanner("이미 프리미엄을 이용 중이에요 :)", "ok"); return; }
     if (typeof TossPayments === "undefined") { showBanner("결제 모듈을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.", "bad"); return; }
     try {
@@ -328,38 +428,32 @@
   premiumBtn.onclick = startPayment;
 
   function confirmPayment(paymentKey, orderId, amount) {
-    fetch("/api/confirm", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ paymentKey: paymentKey, orderId: orderId, amount: amount }) })
+    fetch("/api/confirm", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ paymentKey: paymentKey, orderId: orderId, amount: amount, accessToken: currentAccessToken }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         cleanUrl();
-        if (res.ok && res.d.ok && res.d.token) {
-          try { localStorage.setItem("ssom_token", res.d.token); } catch (e) {}
-          setPremium(res.d.expiresAt);
-          showBanner("🎉 프리미엄이 활성화됐어요! 이제 무제한 + 정밀 분석을 쓸 수 있어요.", "ok");
-        } else { showBanner("결제 확인에 실패했어요" + (res.d && res.d.error ? " (" + res.d.error + ")" : "") + ".", "bad"); }
+        if (res.ok && res.d.ok) { refreshPremiumFromDB(); showBanner("🎉 프리미엄이 활성화됐어요! 이제 무제한 + 정밀 분석을 쓸 수 있어요.", "ok"); }
+        else { showBanner("결제 확인에 실패했어요" + (res.d && res.d.error ? " (" + res.d.error + ")" : "") + ".", "bad"); }
       })
       .catch(function () { cleanUrl(); showBanner("결제 확인 중 오류가 났어요.", "bad"); });
   }
-  function checkExistingPremium() {
-    var token = null;
-    try { token = localStorage.getItem("ssom_token"); } catch (e) {}
-    if (!token) return;
-    fetch("/api/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token: token }) })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { if (d && d.premium) { setPremium(d.expiresAt); } else { try { localStorage.removeItem("ssom_token"); } catch (e) {} } })
-      .catch(function () {});
-  }
+
   function cleanUrl() { try { history.replaceState({}, "", location.origin + location.pathname); } catch (e) {} }
 
-  (function handleLoad() {
+  function handlePaymentRedirect() {
     var p = new URLSearchParams(location.search);
     if (p.get("paymentKey") && p.get("orderId") && p.get("amount")) { confirmPayment(p.get("paymentKey"), p.get("orderId"), p.get("amount")); }
-    else if (p.get("pay") === "fail" || p.get("code")) { cleanUrl(); showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad"); checkExistingPremium(); }
-    else { checkExistingPremium(); }
-  })();
+    else if (p.get("pay") === "fail" || p.get("code")) { cleanUrl(); showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad"); }
+  }
 
-  updateQuota();
-  renderSituation();
+  // ===== 초기화 =====
+  (function init() {
+    updateQuota(); renderSituation(); renderAccount();
+    sb.auth.getSession().then(function (s) {
+      return applySession(s && s.data ? s.data.session : null);
+    }).then(function () { handlePaymentRedirect(); })
+      .catch(function () { handlePaymentRedirect(); });
+  })();
 
   // ===== 분석 =====
   function showGate() {
@@ -384,8 +478,7 @@
     setLoading(true);
     var typing = el("div", "typing"); typing.innerHTML = "<span></span><span></span><span></span>"; resultsEl.appendChild(typing);
 
-    var token = null; try { token = localStorage.getItem("ssom_token"); } catch (e) {}
-    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value, situation: selSituation, token: token };
+    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value, situation: selSituation, accessToken: currentAccessToken };
     if (mode === "image") { payload.image = imageData; payload.mediaType = "image/jpeg"; }
     else { payload.convo = convoEl.value; }
 
@@ -397,28 +490,21 @@
         renderResult(res.d);
         if (!premium) { left--; updateQuota(); }
       })
-      .catch(function () {
-        resultsEl.innerHTML = "";
-        errorEl.textContent = "분석을 만들지 못했어요. 대화나 캡처를 확인하고 다시 시도해 주세요.";
-        errorEl.style.display = "block";
-      })
+      .catch(function () { resultsEl.innerHTML = ""; errorEl.textContent = "분석을 만들지 못했어요. 대화나 캡처를 확인하고 다시 시도해 주세요."; errorEl.style.display = "block"; })
       .then(function () { setLoading(false); });
   };
 
   function renderResult(d) {
     var card = el("section", "score");
     card.appendChild(el("div", "score-top", "💘 썸 온도"));
-    var num = el("div", "score-num");
-    var numText = document.createTextNode("0"); num.appendChild(numText); num.appendChild(el("small", null, "/100"));
-    card.appendChild(num);
+    var num = el("div", "score-num"); var numText = document.createTextNode("0"); num.appendChild(numText); num.appendChild(el("small", null, "/100")); card.appendChild(num);
     card.appendChild(el("div", "temp", d.temperature || ""));
     var bar = el("div", "bar"); var fill = el("div", "bar-fill"); bar.appendChild(fill); card.appendChild(bar);
     var ends = el("div", "bar-ends"); ends.innerHTML = "<span>🧊</span><span>🔥</span>"; card.appendChild(ends);
     if (d.verdict) card.appendChild(el("div", "verdict", d.verdict));
     if (d.signals && d.signals.length) { var sg = el("div", "signals"); d.signals.forEach(function (s) { sg.appendChild(el("div", "signal", "· " + s)); }); card.appendChild(sg); }
     var wm = el("div", "watermark"); wm.appendChild(el("span", "wm-name", "💘 썸코치"));
-    var host = el("span", null, "ssomcoach.vercel.app"); host.style.fontSize = "11px"; host.style.opacity = ".6"; wm.appendChild(host);
-    card.appendChild(wm);
+    var host = el("span", null, "ssomcoach.vercel.app"); host.style.fontSize = "11px"; host.style.opacity = ".6"; wm.appendChild(host); card.appendChild(wm);
 
     var actions = el("div", "score-actions");
     if (typeof html2canvas !== "undefined") {
@@ -437,12 +523,10 @@
       try { navigator.clipboard.writeText(t); } catch (e) {}
       copyBtn.textContent = "✓ 복사됨"; setTimeout(function () { copyBtn.textContent = "🔗 결과 복사"; }, 1700);
     };
-    actions.appendChild(copyBtn);
-    card.appendChild(actions);
+    actions.appendChild(copyBtn); card.appendChild(actions);
     resultsEl.appendChild(card);
     resultsEl.appendChild(el("p", "share-hint", "📸 이미지로 저장해서 친구에게 공유해보세요"));
 
-    // 정밀 분석 (프리미엄)
     if (d.personality || d.strategy || d.caution) {
       var deep = el("section", "deep");
       deep.appendChild(el("div", "deep-h", "🔍 정밀 분석"));
