@@ -1,19 +1,30 @@
-// GitHub 저장소의 api/analyze.js 위치에 둡니다.
-// 글자/캡처를 받아 분석. 이용권 토큰이 유효하면 '정밀 분석'(성향·전략·주의)까지 제공.
+// api/analyze.js — 글자/캡처 분석. 로그인 사용자의 구독을 서버에서 확인해 '정밀 분석'을 풀어줍니다.
 
-var crypto = require("crypto");
+var SUPABASE_URL = process.env.SUPABASE_URL;
+var SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
 
-function verifyToken(token, secret) {
-  if (!token || token.indexOf(".") < 0) return null;
-  var parts = token.split(".");
-  var payload = parts[0], sig = parts[1];
-  var expected = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
-  if (sig !== expected) return null;
+async function getUserId(accessToken) {
+  if (!accessToken) return null;
   try {
-    var obj = JSON.parse(Buffer.from(payload, "base64url").toString());
-    if (!obj.exp || Date.now() > obj.exp) return null;
-    return obj;
+    var r = await fetch(SUPABASE_URL + "/auth/v1/user", {
+      headers: { "apikey": SERVICE_ROLE, "Authorization": "Bearer " + accessToken }
+    });
+    if (!r.ok) return null;
+    var u = await r.json();
+    return u && u.id ? u.id : null;
   } catch (e) { return null; }
+}
+
+async function isUserPremium(userId) {
+  if (!userId || !SUPABASE_URL || !SERVICE_ROLE) return false;
+  try {
+    var r = await fetch(SUPABASE_URL + "/rest/v1/subscriptions?user_id=eq." + userId + "&select=expires_at", {
+      headers: { "apikey": SERVICE_ROLE, "Authorization": "Bearer " + SERVICE_ROLE }
+    });
+    if (!r.ok) return false;
+    var rows = await r.json();
+    return !!(rows[0] && new Date(rows[0].expires_at).getTime() > Date.now());
+  } catch (e) { return false; }
 }
 
 var SCORE_RULES =
@@ -45,8 +56,8 @@ module.exports = async function handler(req, res) {
 
   if (!hasImage && !convo.trim()) { res.status(400).json({ error: "대화 내용이 필요해요." }); return; }
 
-  var isPremium = false;
-  try { if (body.token && process.env.TOKEN_SECRET) { isPremium = !!verifyToken(body.token, process.env.TOKEN_SECRET); } } catch (e) {}
+  var userId = await getUserId(body.accessToken);
+  var isPremium = await isUserPremium(userId);
 
   var roleLine = '너는 한국 20~30대 연애 코치이자 "썸 온도 분석가"야.';
   var taskLine = hasImage
