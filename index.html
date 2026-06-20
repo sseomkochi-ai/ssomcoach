@@ -13,26 +13,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   *{ box-sizing:border-box; margin:0; padding:0; }
-  :root{
-    --ink:#160F22; --ink2:#211735; --ink3:#2C2042;
-    --blush:#FF6F91; --peach:#FFB36B; --rose:#FF9DB6;
-    --cream:#F6EEF4; --muted:#9E92B6; --line:rgba(255,255,255,.09);
-  }
-  body{
-    font-family:'Noto Sans KR',system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-    background:
-      radial-gradient(1100px 580px at 50% -14%, rgba(255,111,145,.28), transparent 60%),
-      radial-gradient(820px 480px at 110% 4%, rgba(255,179,107,.16), transparent 55%),
-      var(--ink);
-    color:var(--cream); min-height:100vh;
-    display:flex; justify-content:center; padding:26px 16px 40px;
-  }
+  :root{ --ink:#160F22; --ink2:#211735; --ink3:#2C2042; --blush:#FF6F91; --peach:#FFB36B; --rose:#FF9DB6; --cream:#F6EEF4; --muted:#9E92B6; --line:rgba(255,255,255,.09); }
+  body{ font-family:'Noto Sans KR',system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    background:radial-gradient(1100px 580px at 50% -14%, rgba(255,111,145,.28), transparent 60%), radial-gradient(820px 480px at 110% 4%, rgba(255,179,107,.16), transparent 55%), var(--ink);
+    color:var(--cream); min-height:100vh; display:flex; justify-content:center; padding:26px 16px 40px; }
   .wrap{ width:100%; max-width:470px; }
   .banner{ border-radius:14px; padding:13px 15px; margin-bottom:16px; font-size:13.5px; font-weight:500; line-height:1.5; }
   .banner.ok{ background:linear-gradient(135deg,rgba(255,111,145,.2),rgba(255,179,107,.2)); border:1px solid rgba(255,179,107,.45); color:var(--cream); }
   .banner.bad{ background:rgba(255,111,145,.1); border:1px solid rgba(255,111,145,.3); color:var(--rose); }
   .hero{ text-align:center; padding:10px 4px 22px; }
-  .eyebrow{ display:inline-block; font-size:12px; font-weight:700; letter-spacing:.2px; color:var(--rose); background:rgba(255,111,145,.12); border:1px solid rgba(255,111,145,.25); padding:6px 13px; border-radius:999px; margin-bottom:16px; }
+  .eyebrow{ display:inline-block; font-size:12px; font-weight:700; color:var(--rose); background:rgba(255,111,145,.12); border:1px solid rgba(255,111,145,.25); padding:6px 13px; border-radius:999px; margin-bottom:16px; }
   .logo{ font-family:'Jua',sans-serif; font-size:26px; letter-spacing:-.5px; opacity:.85; margin-bottom:8px; }
   .tagline{ font-family:'Jua',sans-serif; font-size:33px; line-height:1.24; letter-spacing:-.6px; font-weight:400; }
   .tagline span{ background:linear-gradient(90deg,var(--blush),var(--peach)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
@@ -59,14 +49,17 @@
   .preview img{ width:100%; max-height:300px; object-fit:contain; border-radius:14px; background:var(--ink3); border:1px solid var(--line); }
   .change{ width:100%; margin-top:10px; font-family:inherit; font-size:13px; color:var(--muted); background:transparent; border:1px solid var(--line); padding:10px; border-radius:11px; cursor:pointer; }
   .change:hover{ color:var(--cream); border-color:var(--rose); }
+  .locked{ margin-top:18px; border:1.5px dashed rgba(255,179,107,.4); border-radius:14px; padding:16px; text-align:center; background:rgba(255,179,107,.04); }
+  .locked-h{ font-family:'Jua',sans-serif; font-size:14.5px; color:var(--peach); margin-bottom:6px; }
+  .locked p{ font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px; }
+  .locked-btn{ font-family:'Jua',sans-serif; font-size:13px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; padding:10px 16px; border-radius:10px; cursor:pointer; }
   .memo{ width:100%; margin-top:14px; padding:12px 14px; font-family:inherit; font-size:14px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:14px; transition:border .2s, box-shadow .2s; }
   .memo::placeholder{ color:#6F6488; }
   .memo:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
   .quota{ font-size:12.5px; color:var(--muted); text-align:center; margin:18px 0 10px; }
   .quota b{ color:var(--rose); font-weight:700; }
   .cta{ width:100%; font-family:'Jua',sans-serif; font-size:17px; letter-spacing:-.3px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:16px; padding:15px; cursor:pointer; transition:transform .12s, box-shadow .2s, filter .2s; box-shadow:0 10px 26px rgba(255,111,145,.3); }
-  .cta:hover{ transform:translateY(-2px); }
-  .cta:active{ transform:translateY(0); }
+  .cta:hover{ transform:translateY(-2px); } .cta:active{ transform:translateY(0); }
   .cta:disabled{ filter:grayscale(.5) brightness(.8); cursor:not-allowed; transform:none; box-shadow:none; }
   .error{ margin-top:16px; background:rgba(255,111,145,.1); border:1px solid rgba(255,111,145,.3); color:var(--rose); font-size:13.5px; padding:12px 14px; border-radius:12px; line-height:1.5; }
   .typing{ display:flex; gap:6px; align-items:center; background:var(--ink3); width:fit-content; padding:14px 18px; border-radius:18px 18px 18px 4px; margin-top:18px; }
@@ -93,6 +86,11 @@
   .act{ flex:1; font-family:inherit; font-weight:700; font-size:13px; color:#160F22; background:rgba(255,255,255,.62); border:none; padding:11px; border-radius:12px; cursor:pointer; transition:background .2s; }
   .act:hover{ background:rgba(255,255,255,.88); }
   .share-hint{ text-align:center; font-size:11.5px; color:var(--muted); margin-top:9px; }
+  .deep{ background:var(--ink2); border:1px solid rgba(255,179,107,.35); border-radius:18px; padding:16px; margin-top:14px; }
+  .deep-h{ font-family:'Jua',sans-serif; font-size:15px; color:var(--peach); }
+  .deep-block{ margin-top:12px; }
+  .deep-block .t{ font-size:12px; font-weight:700; color:var(--rose); margin-bottom:5px; }
+  .deep-block .c{ font-size:13.5px; line-height:1.6; color:var(--cream); }
   .res-head{ font-size:14px; color:var(--muted); margin:24px 2px 12px; font-weight:500; }
   .card{ background:var(--ink2); border:1px solid var(--line); border-radius:18px; padding:15px 15px 13px; margin-bottom:12px; animation:scin .45s both cubic-bezier(.2,.7,.3,1); }
   .card-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:11px; }
@@ -140,9 +138,7 @@
       <button class="mode" id="modeImage" type="button">📷 카톡 캡처</button>
     </div>
 
-    <div id="textInput">
-      <textarea class="ta" id="convo"></textarea>
-    </div>
+    <div id="textInput"><textarea class="ta" id="convo"></textarea></div>
 
     <div id="imageInput" style="display:none">
       <label class="upload" id="uploadLabel">
@@ -159,6 +155,8 @@
     <span class="lbl mt">어떤 느낌으로 답할까?</span>
     <div class="pills" id="tonePills"></div>
 
+    <div id="situationArea"></div>
+
     <input class="memo" id="memo" placeholder="상황 메모 (선택) — 예: 자연스럽게 만나자고 하고 싶어요" />
 
     <div class="quota" id="quota"></div>
@@ -172,9 +170,9 @@
     <div class="premium-in">
       <div class="premium-h">✨ 프리미엄</div>
       <div class="premium-price">30일 이용권 · 무제한</div>
-      <div class="feat"><span class="dot">◆</span> 썸 온도 분석 무제한 — 글자·캡처 모두</div>
-      <div class="feat"><span class="dot">◆</span> 더 깊은 해석 — 상대 성향·다음 단계 전략까지</div>
-      <div class="feat"><span class="dot">◆</span> 상황별 시나리오 — 첫 연락 · 데이트 신청 · 화해 · 재회</div>
+      <div class="feat"><span class="dot">◆</span> 무제한 분석 — 글자·캡처 모두</div>
+      <div class="feat"><span class="dot">◆</span> 정밀 분석 — 상대 성향·다음 단계 전략·주의할 점</div>
+      <div class="feat"><span class="dot">◆</span> 상황별 모드 — 첫 연락·데이트 신청·읽씹·화해·재회</div>
       <button class="pbtn" id="premiumBtn">프리미엄 시작하기 · 2,900원</button>
     </div>
   </section>
@@ -184,14 +182,15 @@
 
 <script>
 (function () {
-  // ===== 설정 (가격 바꾸려면 여기 + api/confirm.js 둘 다 같은 숫자로) =====
-  var CLIENT_KEY = "test_ck_DpexMgkW36ZxveM1dkBb3GbR5ozO"; // 라이브 전환 시 라이브 클라이언트 키로 교체
+  var CLIENT_KEY = "test_ck_DpexMgkW36ZxveM1dkBb3GbR5ozO"; // 라이브 전환 시 교체
   var PRICE = 2900;
 
   var REL = ["썸 타는 중", "짝사랑", "소개팅·매칭앱", "연인", "친구에서 썸으로"];
   var TONES = ["자연스럽게", "다정하게", "가볍게 ㅋㅋ", "살짝 밀당", "진솔하게"];
-  var selRel = REL[0], selTone = TONES[0], left = 3, loading = false;
-  var premium = false, premiumExp = null;
+  var SITUATIONS = ["선택 안 함", "첫 연락", "데이트 신청", "읽씹 대응", "화해하기", "재회 시도", "권태기"];
+
+  var selRel = REL[0], selTone = TONES[0], selSituation = SITUATIONS[0];
+  var left = 3, loading = false, premium = false, premiumExp = null;
   var mode = "text", imageData = null;
 
   function el(tag, cls, text) {
@@ -219,6 +218,7 @@
   var preview = document.getElementById("preview");
   var previewImg = document.getElementById("previewImg");
   var changeImg = document.getElementById("changeImg");
+  var situationArea = document.getElementById("situationArea");
 
   convoEl.placeholder = "카톡 대화를 붙여넣어 주세요.\n예)\n상대: 오늘 뭐 했어?\n나: 그냥 집에 있었지 ㅎㅎ 너는?\n상대: 나도! 갑자기 네 생각나서 ㅋㅋ";
 
@@ -226,30 +226,47 @@
     var c = document.getElementById(containerId);
     items.forEach(function (it) {
       var b = el("button", "pill" + (isSel(it) ? " on" : ""), it);
-      b.onclick = function () {
-        setSel(it);
-        Array.prototype.forEach.call(c.children, function (ch) { ch.classList.toggle("on", ch.textContent === it); });
-      };
+      b.onclick = function () { setSel(it); Array.prototype.forEach.call(c.children, function (ch) { ch.classList.toggle("on", ch.textContent === it); }); };
       c.appendChild(b);
     });
   }
   buildPills("relPills", REL, function (x) { return x === selRel; }, function (v) { selRel = v; });
   buildPills("tonePills", TONES, function (x) { return x === selTone; }, function (v) { selTone = v; });
 
+  function renderSituation() {
+    situationArea.innerHTML = "";
+    if (premium) {
+      situationArea.appendChild(el("span", "lbl mt", "상황 (정밀 분석)"));
+      var pills = el("div", "pills");
+      SITUATIONS.forEach(function (s) {
+        var b = el("button", "pill" + (s === selSituation ? " on" : ""), s);
+        b.onclick = function () { selSituation = s; Array.prototype.forEach.call(pills.children, function (ch) { ch.classList.toggle("on", ch.textContent === s); }); };
+        pills.appendChild(b);
+      });
+      situationArea.appendChild(pills);
+    } else {
+      var locked = el("div", "locked");
+      locked.appendChild(el("div", "locked-h", "🔒 상황별 정밀 분석"));
+      locked.appendChild(el("p", null, "상대 성향·다음 단계 전략·주의할 점까지. 첫 연락·데이트 신청·재회 등 상황에 딱 맞춰 분석해요."));
+      var lb = el("button", "locked-btn", "프리미엄에서 열기 · 2,900원");
+      lb.onclick = startPayment;
+      locked.appendChild(lb);
+      situationArea.appendChild(locked);
+    }
+  }
+
   function updateQuota() {
     if (premium) {
       var d = premiumExp ? new Date(premiumExp).toLocaleDateString("ko-KR") : "";
       quotaEl.innerHTML = "✨ <b>프리미엄 이용 중</b>" + (d ? " · " + d + "까지" : "");
-    } else {
-      quotaEl.innerHTML = "무료 체험 <b>" + left + "회</b> 남음";
-    }
+    } else { quotaEl.innerHTML = "무료 체험 <b>" + left + "회</b> 남음"; }
   }
 
   function setPremium(exp) {
     premium = true; premiumExp = exp;
     updateQuota();
-    premiumBtn.textContent = "✨ 프리미엄 이용 중";
-    premiumBtn.disabled = true;
+    premiumBtn.textContent = "✨ 프리미엄 이용 중"; premiumBtn.disabled = true;
+    renderSituation();
   }
 
   function showBanner(msg, type) {
@@ -263,34 +280,20 @@
     if (mode === "text") btn.disabled = !convoEl.value.trim();
     else btn.disabled = !imageData;
   }
-  function setLoading(v) {
-    loading = v;
-    btn.textContent = v ? "AI가 대화 읽는 중…" : "썸 온도 + 답장 분석하기";
-    updateCtaState();
-  }
+  function setLoading(v) { loading = v; btn.textContent = v ? "AI가 대화 읽는 중…" : "썸 온도 + 답장 분석하기"; updateCtaState(); }
   convoEl.addEventListener("input", updateCtaState);
 
-  // ===== 입력 모드 토글 =====
-  modeText.onclick = function () {
-    mode = "text"; modeText.classList.add("on"); modeImage.classList.remove("on");
-    textInput.style.display = ""; imageInput.style.display = "none"; updateCtaState();
-  };
-  modeImage.onclick = function () {
-    mode = "image"; modeImage.classList.add("on"); modeText.classList.remove("on");
-    textInput.style.display = "none"; imageInput.style.display = ""; updateCtaState();
-  };
+  modeText.onclick = function () { mode = "text"; modeText.classList.add("on"); modeImage.classList.remove("on"); textInput.style.display = ""; imageInput.style.display = "none"; updateCtaState(); };
+  modeImage.onclick = function () { mode = "image"; modeImage.classList.add("on"); modeText.classList.remove("on"); textInput.style.display = "none"; imageInput.style.display = ""; updateCtaState(); };
 
-  // ===== 이미지 압축 후 base64 =====
   function processImage(file, cb) {
     var reader = new FileReader();
     reader.onload = function (e) {
       var img = new Image();
       img.onload = function () {
-        var maxEdge = 1400;
-        var scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+        var maxEdge = 1400, scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
         var cw = Math.round(img.width * scale), ch = Math.round(img.height * scale);
-        var canvas = document.createElement("canvas");
-        canvas.width = cw; canvas.height = ch;
+        var canvas = document.createElement("canvas"); canvas.width = cw; canvas.height = ch;
         canvas.getContext("2d").drawImage(img, 0, 0, cw, ch);
         var dataUrl = canvas.toDataURL("image/jpeg", 0.85);
         cb(dataUrl.split(",")[1], dataUrl);
@@ -301,24 +304,16 @@
     reader.onerror = function () { cb(null); };
     reader.readAsDataURL(file);
   }
-
   fileInput.onchange = function () {
     var f = fileInput.files && fileInput.files[0];
     if (!f) return;
     uploadText.textContent = "이미지 처리 중…";
     processImage(f, function (base64, dataUrl) {
       if (!base64) { uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; showBanner("이미지를 불러오지 못했어요. 다른 이미지를 시도해 주세요.", "bad"); return; }
-      imageData = base64;
-      previewImg.src = dataUrl;
-      uploadLabel.style.display = "none";
-      preview.style.display = "";
-      updateCtaState();
+      imageData = base64; previewImg.src = dataUrl; uploadLabel.style.display = "none"; preview.style.display = ""; updateCtaState();
     });
   };
-  changeImg.onclick = function () {
-    imageData = null; preview.style.display = "none"; uploadLabel.style.display = "";
-    uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; fileInput.value = ""; updateCtaState();
-  };
+  changeImg.onclick = function () { imageData = null; preview.style.display = "none"; uploadLabel.style.display = ""; uploadText.textContent = "📷 카톡 캡처 이미지 올리기"; fileInput.value = ""; updateCtaState(); };
 
   // ===== 결제 =====
   function startPayment() {
@@ -327,13 +322,7 @@
     try {
       var tp = TossPayments(CLIENT_KEY);
       var orderId = "ssom_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-      tp.requestPayment("카드", {
-        amount: PRICE,
-        orderId: orderId,
-        orderName: "썸코치 30일 이용권",
-        successUrl: location.origin + "/",
-        failUrl: location.origin + "/?pay=fail"
-      }).catch(function () {});
+      tp.requestPayment("카드", { amount: PRICE, orderId: orderId, orderName: "썸코치 30일 이용권", successUrl: location.origin + "/", failUrl: location.origin + "/?pay=fail" }).catch(function () {});
     } catch (e) { showBanner("결제를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.", "bad"); }
   }
   premiumBtn.onclick = startPayment;
@@ -346,12 +335,11 @@
         if (res.ok && res.d.ok && res.d.token) {
           try { localStorage.setItem("ssom_token", res.d.token); } catch (e) {}
           setPremium(res.d.expiresAt);
-          showBanner("🎉 프리미엄이 활성화됐어요! 이제 무제한으로 분석할 수 있어요.", "ok");
+          showBanner("🎉 프리미엄이 활성화됐어요! 이제 무제한 + 정밀 분석을 쓸 수 있어요.", "ok");
         } else { showBanner("결제 확인에 실패했어요" + (res.d && res.d.error ? " (" + res.d.error + ")" : "") + ".", "bad"); }
       })
       .catch(function () { cleanUrl(); showBanner("결제 확인 중 오류가 났어요.", "bad"); });
   }
-
   function checkExistingPremium() {
     var token = null;
     try { token = localStorage.getItem("ssom_token"); } catch (e) {}
@@ -361,19 +349,17 @@
       .then(function (d) { if (d && d.premium) { setPremium(d.expiresAt); } else { try { localStorage.removeItem("ssom_token"); } catch (e) {} } })
       .catch(function () {});
   }
-
   function cleanUrl() { try { history.replaceState({}, "", location.origin + location.pathname); } catch (e) {} }
 
   (function handleLoad() {
     var p = new URLSearchParams(location.search);
-    if (p.get("paymentKey") && p.get("orderId") && p.get("amount")) {
-      confirmPayment(p.get("paymentKey"), p.get("orderId"), p.get("amount"));
-    } else if (p.get("pay") === "fail" || p.get("code")) {
-      cleanUrl(); showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad"); checkExistingPremium();
-    } else { checkExistingPremium(); }
+    if (p.get("paymentKey") && p.get("orderId") && p.get("amount")) { confirmPayment(p.get("paymentKey"), p.get("orderId"), p.get("amount")); }
+    else if (p.get("pay") === "fail" || p.get("code")) { cleanUrl(); showBanner("결제가 취소되었거나 실패했어요. 다시 시도해 주세요.", "bad"); checkExistingPremium(); }
+    else { checkExistingPremium(); }
   })();
 
   updateQuota();
+  renderSituation();
 
   // ===== 분석 =====
   function showGate() {
@@ -381,10 +367,9 @@
     var g = el("section", "gate");
     g.appendChild(el("div", "gate-ic", "🔒"));
     g.appendChild(el("h3", null, "무료 체험을 모두 썼어요"));
-    var pp = el("p"); pp.innerHTML = "프리미엄(30일 이용권)으로 업그레이드하면<br>무제한으로 분석할 수 있어요.";
+    var pp = el("p"); pp.innerHTML = "프리미엄(30일 이용권)으로 업그레이드하면<br>무제한 + 정밀 분석을 쓸 수 있어요.";
     g.appendChild(pp);
-    var gb = el("button", "pbtn", "프리미엄 시작하기 · 2,900원");
-    gb.onclick = startPayment;
+    var gb = el("button", "pbtn", "프리미엄 시작하기 · 2,900원"); gb.onclick = startPayment;
     g.appendChild(gb);
     resultsEl.appendChild(g);
   }
@@ -395,14 +380,12 @@
     if (mode === "text" && !convoEl.value.trim()) return;
     if (mode === "image" && !imageData) return;
 
-    errorEl.style.display = "none";
-    resultsEl.innerHTML = "";
+    errorEl.style.display = "none"; resultsEl.innerHTML = "";
     setLoading(true);
-    var typing = el("div", "typing");
-    typing.innerHTML = "<span></span><span></span><span></span>";
-    resultsEl.appendChild(typing);
+    var typing = el("div", "typing"); typing.innerHTML = "<span></span><span></span><span></span>"; resultsEl.appendChild(typing);
 
-    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value };
+    var token = null; try { token = localStorage.getItem("ssom_token"); } catch (e) {}
+    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value, situation: selSituation, token: token };
     if (mode === "image") { payload.image = imageData; payload.mediaType = "image/jpeg"; }
     else { payload.convo = convoEl.value; }
 
@@ -426,29 +409,15 @@
     var card = el("section", "score");
     card.appendChild(el("div", "score-top", "💘 썸 온도"));
     var num = el("div", "score-num");
-    var numText = document.createTextNode("0");
-    num.appendChild(numText);
-    num.appendChild(el("small", null, "/100"));
+    var numText = document.createTextNode("0"); num.appendChild(numText); num.appendChild(el("small", null, "/100"));
     card.appendChild(num);
     card.appendChild(el("div", "temp", d.temperature || ""));
-    var bar = el("div", "bar");
-    var fill = el("div", "bar-fill");
-    bar.appendChild(fill);
-    card.appendChild(bar);
-    var ends = el("div", "bar-ends");
-    ends.innerHTML = "<span>🧊</span><span>🔥</span>";
-    card.appendChild(ends);
+    var bar = el("div", "bar"); var fill = el("div", "bar-fill"); bar.appendChild(fill); card.appendChild(bar);
+    var ends = el("div", "bar-ends"); ends.innerHTML = "<span>🧊</span><span>🔥</span>"; card.appendChild(ends);
     if (d.verdict) card.appendChild(el("div", "verdict", d.verdict));
-    if (d.signals && d.signals.length) {
-      var sg = el("div", "signals");
-      d.signals.forEach(function (s) { sg.appendChild(el("div", "signal", "· " + s)); });
-      card.appendChild(sg);
-    }
-    var wm = el("div", "watermark");
-    wm.appendChild(el("span", "wm-name", "💘 썸코치"));
-    var host = el("span", null, "ssomcoach.vercel.app");
-    host.style.fontSize = "11px"; host.style.opacity = ".6";
-    wm.appendChild(host);
+    if (d.signals && d.signals.length) { var sg = el("div", "signals"); d.signals.forEach(function (s) { sg.appendChild(el("div", "signal", "· " + s)); }); card.appendChild(sg); }
+    var wm = el("div", "watermark"); wm.appendChild(el("span", "wm-name", "💘 썸코치"));
+    var host = el("span", null, "ssomcoach.vercel.app"); host.style.fontSize = "11px"; host.style.opacity = ".6"; wm.appendChild(host);
     card.appendChild(wm);
 
     var actions = el("div", "score-actions");
@@ -457,9 +426,7 @@
       saveBtn.onclick = function () {
         saveBtn.textContent = "저장 중…";
         html2canvas(card, { backgroundColor: null, scale: 2, useCORS: true }).then(function (canvas) {
-          var link = document.createElement("a");
-          link.download = "ssomcoach.png"; link.href = canvas.toDataURL("image/png"); link.click();
-          saveBtn.textContent = "🖼️ 이미지 저장";
+          var link = document.createElement("a"); link.download = "ssomcoach.png"; link.href = canvas.toDataURL("image/png"); link.click(); saveBtn.textContent = "🖼️ 이미지 저장";
         }).catch(function () { saveBtn.textContent = "🖼️ 이미지 저장"; });
       };
       actions.appendChild(saveBtn);
@@ -468,14 +435,22 @@
     copyBtn.onclick = function () {
       var t = "내 썸 온도는 " + d.score + "점! " + (d.temperature || "") + "\n\"" + (d.verdict || "") + "\"\n\nssomcoach.vercel.app";
       try { navigator.clipboard.writeText(t); } catch (e) {}
-      copyBtn.textContent = "✓ 복사됨";
-      setTimeout(function () { copyBtn.textContent = "🔗 결과 복사"; }, 1700);
+      copyBtn.textContent = "✓ 복사됨"; setTimeout(function () { copyBtn.textContent = "🔗 결과 복사"; }, 1700);
     };
     actions.appendChild(copyBtn);
     card.appendChild(actions);
-
     resultsEl.appendChild(card);
     resultsEl.appendChild(el("p", "share-hint", "📸 이미지로 저장해서 친구에게 공유해보세요"));
+
+    // 정밀 분석 (프리미엄)
+    if (d.personality || d.strategy || d.caution) {
+      var deep = el("section", "deep");
+      deep.appendChild(el("div", "deep-h", "🔍 정밀 분석"));
+      if (d.personality) { var b1 = el("div", "deep-block"); b1.appendChild(el("div", "t", "상대 성향")); b1.appendChild(el("div", "c", d.personality)); deep.appendChild(b1); }
+      if (d.strategy) { var b2 = el("div", "deep-block"); b2.appendChild(el("div", "t", "다음 단계 전략")); b2.appendChild(el("div", "c", d.strategy)); deep.appendChild(b2); }
+      if (d.caution) { var b3 = el("div", "deep-block"); b3.appendChild(el("div", "t", "주의할 점")); b3.appendChild(el("div", "c", d.caution)); deep.appendChild(b3); }
+      resultsEl.appendChild(deep);
+    }
 
     var target = Math.max(0, Math.min(100, parseInt(d.score, 10) || 0));
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -488,18 +463,11 @@
 
     resultsEl.appendChild(el("div", "res-head", "이렇게 답해보는 건 어때요?"));
     d.replies.slice(0, 3).forEach(function (rep, i) {
-      var c = el("div", "card");
-      c.style.animationDelay = (i * 0.09) + "s";
-      var ctop = el("div", "card-top");
-      ctop.appendChild(el("span", "tag", rep.label || ""));
+      var c = el("div", "card"); c.style.animationDelay = (i * 0.09) + "s";
+      var ctop = el("div", "card-top"); ctop.appendChild(el("span", "tag", rep.label || ""));
       var cp = el("button", "copy", "복사");
-      cp.onclick = function () {
-        try { navigator.clipboard.writeText(rep.message || ""); } catch (e) {}
-        cp.textContent = "✓ 복사됨"; cp.classList.add("done");
-        setTimeout(function () { cp.textContent = "복사"; cp.classList.remove("done"); }, 1500);
-      };
-      ctop.appendChild(cp);
-      c.appendChild(ctop);
+      cp.onclick = function () { try { navigator.clipboard.writeText(rep.message || ""); } catch (e) {} cp.textContent = "✓ 복사됨"; cp.classList.add("done"); setTimeout(function () { cp.textContent = "복사"; cp.classList.remove("done"); }, 1500); };
+      ctop.appendChild(cp); c.appendChild(ctop);
       c.appendChild(el("div", "bubble", rep.message || ""));
       if (rep.tip) c.appendChild(el("div", "tip", "💡 " + rep.tip));
       resultsEl.appendChild(c);
