@@ -122,6 +122,15 @@
   .modal-card{ width:100%; max-width:360px; background:var(--ink2); border:1px solid var(--line); border-radius:20px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
   .modal-title{ font-family:'Jua',sans-serif; font-size:20px; margin-bottom:4px; text-align:center; }
   .modal-sub{ font-size:12.5px; color:var(--muted); text-align:center; margin-bottom:16px; line-height:1.5; }
+  .social-btns{ display:flex; flex-direction:column; gap:9px; margin-bottom:16px; }
+  .social-btn{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; font-family:inherit; font-size:14px; font-weight:700; padding:12px; border-radius:12px; border:none; cursor:pointer; transition:filter .15s; }
+  .social-btn:hover{ filter:brightness(.96); }
+  .social-btn:disabled{ filter:grayscale(.4) brightness(.9); cursor:default; }
+  .social-btn .ic{ width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; }
+  .sb-kakao{ background:#FEE500; color:#191600; }
+  .sb-google{ background:#fff; color:#1f1f1f; border:1px solid #dadce0; }
+  .divider{ display:flex; align-items:center; gap:10px; color:var(--muted); font-size:11.5px; margin:4px 0 14px; }
+  .divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--line); }
   .modal-card input{ width:100%; margin-bottom:10px; padding:12px 14px; font-family:inherit; font-size:14px; color:var(--cream); background:var(--ink3); border:1px solid var(--line); border-radius:12px; }
   .modal-card input::placeholder{ color:#6F6488; }
   .modal-card input:focus{ outline:none; border-color:var(--blush); box-shadow:0 0 0 3px rgba(255,111,145,.18); }
@@ -201,6 +210,17 @@
   <div class="modal-card">
     <div class="modal-title" id="authTitle">로그인</div>
     <div class="modal-sub" id="authSub">로그인하면 어느 기기서든 프리미엄이 유지돼요.</div>
+
+    <div class="social-btns">
+      <button class="social-btn sb-kakao" id="kakaoBtn" type="button">
+        <span class="ic">💬</span> 카카오로 시작하기
+      </button>
+      <button class="social-btn sb-google" id="googleBtn" type="button">
+        <span class="ic"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span>
+        Google로 시작하기
+      </button>
+    </div>
+    <div class="divider">또는 이메일로</div>
     <input id="authEmail" type="email" placeholder="이메일" autocomplete="email" />
     <input id="authPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" />
     <div class="auth-err" id="authErr"></div>
@@ -261,6 +281,8 @@
   var authToggle = document.getElementById("authToggle");
   var authToggleText = document.getElementById("authToggleText");
   var authClose = document.getElementById("authClose");
+  var kakaoBtn = document.getElementById("kakaoBtn");
+  var googleBtn = document.getElementById("googleBtn");
 
   convoEl.placeholder = "카톡 대화를 붙여넣어 주세요.\n예)\n상대: 오늘 뭐 했어?\n나: 그냥 집에 있었지 ㅎㅎ 너는?\n상대: 나도! 갑자기 네 생각나서 ㅋㅋ";
 
@@ -390,6 +412,29 @@
       // onAuthStateChange 가 프리미엄 상태를 갱신함
     }).catch(function () { authSubmit.disabled = false; setAuthMode(authMode); authErr.textContent = "문제가 발생했어요. 잠시 후 다시 시도해 주세요."; });
   };
+
+  function loginWith(provider, labelBtn) {
+    authErr.textContent = "";
+    if (kakaoBtn) kakaoBtn.disabled = true;
+    if (googleBtn) googleBtn.disabled = true;
+    if (labelBtn) labelBtn.textContent = "이동 중…";
+    sb.auth.signInWithOAuth({ provider: provider, options: { redirectTo: location.origin + "/" } })
+      .then(function (res) {
+        if (res && res.error) {
+          if (kakaoBtn) kakaoBtn.disabled = false;
+          if (googleBtn) googleBtn.disabled = false;
+          authErr.textContent = "소셜 로그인을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.";
+        }
+        // 성공 시 제공자 페이지로 리다이렉트됨 (이후 자동 복귀 → onAuthStateChange)
+      })
+      .catch(function () {
+        if (kakaoBtn) kakaoBtn.disabled = false;
+        if (googleBtn) googleBtn.disabled = false;
+        authErr.textContent = "소셜 로그인을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.";
+      });
+  }
+  if (kakaoBtn) kakaoBtn.onclick = function () { loginWith("kakao", kakaoBtn); };
+  if (googleBtn) googleBtn.onclick = function () { loginWith("google", googleBtn); };
 
   function applySession(session) {
     currentUser = session ? session.user : null;
