@@ -229,7 +229,10 @@
   var SITUATIONS = ["선택 안 함", "첫 연락", "데이트 신청", "읽씹 대응", "화해하기", "재회 시도", "권태기"];
 
   var selRel = REL[0], selTone = TONES[0], selSituation = SITUATIONS[0];
-  var left = 3, loading = false, premium = false, premiumExp = null;
+  function loadNum(key, def) { try { var v = parseInt(localStorage.getItem(key), 10); return isNaN(v) ? def : Math.max(0, Math.min(def, v)); } catch (e) { return def; } }
+  function saveQuota() { try { localStorage.setItem("ssom_free_left", String(left)); localStorage.setItem("ssom_regen_left", String(regenLeft)); } catch (e) {} }
+  var left = loadNum("ssom_free_left", 3), regenLeft = loadNum("ssom_regen_left", 3);
+  var loading = false, premium = false, premiumExp = null;
   var mode = "text", imageData = null;
   var lastConvo = "", lastAvoid = [];
   var currentUser = null, currentAccessToken = null, authMode = "login";
@@ -404,17 +407,31 @@
   }
 
   function refreshPremiumFromDB() {
-    if (!currentUser) { premium = false; premiumExp = null; updateQuota(); renderSituation(); return Promise.resolve(); }
+    if (!currentUser) { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); return Promise.resolve(); }
     return sb.from("subscriptions").select("expires_at").maybeSingle().then(function (q) {
       if (q.data && new Date(q.data.expires_at).getTime() > Date.now()) { premium = true; premiumExp = new Date(q.data.expires_at).getTime(); }
       else { premium = false; premiumExp = null; }
-      updateQuota(); renderSituation(); updatePremiumBtn();
-    }).catch(function () { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); });
+      updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI();
+    }).catch(function () { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); });
   }
 
   function updatePremiumBtn() {
     if (premium) { premiumBtn.textContent = "✨ 프리미엄 이용 중"; premiumBtn.disabled = true; }
     else { premiumBtn.textContent = "프리미엄 시작하기 · 2,900원"; premiumBtn.disabled = false; }
+  }
+
+  function updateRegenUI() {
+    var rb = document.getElementById("regenBtn"), h = document.getElementById("regenHint");
+    if (!rb) return;
+    if (!premium && regenLeft <= 0) {
+      rb.textContent = "🔒 프리미엄에서 무제한 재추천 · 2,900원";
+      rb.onclick = startPayment;
+      if (h) h.textContent = "무료 재추천을 모두 썼어요";
+    } else {
+      rb.textContent = "🔄 다른 느낌의 답장 추천받기";
+      rb.onclick = doRegen;
+      if (h) h.textContent = premium ? "프리미엄 · 무제한 재추천 — 위의 '느낌' 칩을 바꿔도 좋아요" : "무료 재추천 " + regenLeft + "회 남음 — 위의 '느낌' 칩을 바꿔도 좋아요";
+    }
   }
 
   sb.auth.onAuthStateChange(function (_event, session) { applySession(session); });
@@ -495,7 +512,7 @@
         lastConvo = (mode === "text") ? convoEl.value : (res.d.transcript || "");
         lastAvoid = (res.d.replies || []).map(function (r) { return r.message; }).filter(Boolean);
         renderResult(res.d);
-        if (!premium) { left--; updateQuota(); }
+        if (!premium) { left--; saveQuota(); updateQuota(); }
       })
       .catch(function () { resultsEl.innerHTML = ""; errorEl.textContent = "분석을 만들지 못했어요. 대화나 캡처를 확인하고 다시 시도해 주세요."; errorEl.style.display = "block"; })
       .then(function () { setLoading(false); });
@@ -562,7 +579,10 @@
     regenBtn.id = "regenBtn";
     regenBtn.onclick = doRegen;
     resultsEl.appendChild(regenBtn);
-    resultsEl.appendChild(el("p", "regen-hint", "위의 '어떤 느낌으로 답할까?' 칩을 바꾸고 눌러도 좋아요"));
+    var regenHint = el("p", "regen-hint", "");
+    regenHint.id = "regenHint";
+    resultsEl.appendChild(regenHint);
+    updateRegenUI();
   }
 
   function renderReplies(replies) {
@@ -582,7 +602,7 @@
   }
 
   function doRegen() {
-    if (!premium && left <= 0) { showGate(); return; }
+    if (!premium && regenLeft <= 0) { updateRegenUI(); return; }
     var rb = document.getElementById("regenBtn");
     if (rb && rb.disabled) return;
 
@@ -599,8 +619,9 @@
         if (!res.ok || res.d.error || !res.d.replies || !res.d.replies.length) { throw new Error("fail"); }
         renderReplies(res.d.replies);
         lastAvoid = lastAvoid.concat(res.d.replies.map(function (r) { return r.message; }).filter(Boolean)).slice(-9);
-        if (!premium) { left--; updateQuota(); }
-        if (rb) { rb.disabled = false; rb.textContent = "🔄 다른 느낌의 답장 추천받기"; }
+        if (!premium) { regenLeft--; saveQuota(); }
+        if (rb) { rb.disabled = false; }
+        updateRegenUI();
       })
       .catch(function () {
         if (rb) { rb.disabled = false; rb.textContent = "🔄 다시 시도하기"; }
