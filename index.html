@@ -109,6 +109,16 @@
   .regen:hover{ background:rgba(255,111,145,.07); border-color:var(--blush); }
   .regen:disabled{ opacity:.55; cursor:default; }
   .regen-hint{ text-align:center; font-size:11.5px; color:var(--muted); margin-top:8px; }
+  .hist-card{ max-width:430px; max-height:84vh; overflow-y:auto; }
+  .hist-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .hist-chart{ background:var(--ink3); border:1px solid var(--line); border-radius:14px; padding:12px 10px 4px; margin-bottom:14px; }
+  .hist-chart svg{ width:100%; height:auto; display:block; }
+  .hist-dates{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--muted); padding:2px 4px 6px; }
+  .hist-item{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid var(--line); font-size:13px; }
+  .hist-item:last-child{ border-bottom:none; }
+  .hist-meta{ color:var(--muted); font-size:11.5px; margin-top:2px; }
+  .hist-score{ font-family:'Jua',sans-serif; font-size:16px; color:var(--rose); flex:none; }
+  .hist-empty{ text-align:center; color:var(--muted); font-size:12.5px; padding:16px 0; line-height:1.6; }
   .gate{ margin-top:22px; background:var(--ink2); border:1px solid rgba(255,111,145,.28); border-radius:20px; padding:24px 18px; text-align:center; }
   .gate-ic{ font-size:30px; margin-bottom:8px; }
   .gate h3{ font-family:'Jua',sans-serif; font-size:18px; margin:0 0 6px; font-weight:400; }
@@ -122,6 +132,9 @@
   .pbtn{ width:100%; margin-top:14px; font-family:'Jua',sans-serif; font-size:14.5px; color:#160F22; background:linear-gradient(90deg,var(--blush),var(--peach)); border:none; border-radius:13px; padding:13px; cursor:pointer; }
   .pbtn:disabled{ filter:grayscale(.4) brightness(.85); cursor:default; }
   .foot{ text-align:center; color:#6F6488; font-size:11.5px; margin-top:28px; line-height:1.7; }
+  .foot a{ color:#9E92B6; text-decoration:underline; }
+  .foot-links{ margin:10px 0 8px; }
+  .biz{ line-height:1.9; }
   .modal{ position:fixed; inset:0; background:rgba(10,6,18,.72); display:flex; align-items:center; justify-content:center; padding:20px; z-index:100; }
   .modal-card{ width:100%; max-width:360px; background:var(--ink2); border:1px solid var(--line); border-radius:20px; padding:24px 20px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
   .modal-title{ font-family:'Jua',sans-serif; font-size:20px; margin-bottom:4px; text-align:center; }
@@ -194,11 +207,21 @@
       <div class="feat"><span class="dot">◆</span> 무제한 분석 — 글자·캡처 모두</div>
       <div class="feat"><span class="dot">◆</span> 정밀 분석 — 상대 성향·다음 단계 전략·주의할 점</div>
       <div class="feat"><span class="dot">◆</span> 상황별 모드 — 첫 연락·데이트 신청·읽씹·화해·재회</div>
+      <div class="feat"><span class="dot">◆</span> 썸 히스토리 — 상대별 온도 변화 그래프로 기록 저장</div>
       <button class="pbtn" id="premiumBtn">프리미엄 시작하기 · 2,900원</button>
     </div>
   </section>
 
-  <div class="foot">재미로 보는 분석이에요 🙂<br>© 썸코치</div>
+  <div class="foot">
+    재미로 보는 분석이에요 🙂
+    <div class="foot-links"><a href="/terms.html">이용약관</a> · <a href="/privacy.html">개인정보처리방침</a></div>
+    <div class="biz">
+      썸코치 · 상호: 영양담 · 대표: 원준호<br>
+      사업자등록번호: 722-01-03517 · 통신판매업신고: 제2024-충남천안-0721호<br>
+      충남 천안시 서북구 동서대로 129-22, A동 1112호 · 문의: sseomkochi@gmail.com<br>
+      © 썸코치
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="authModal" style="display:none">
@@ -211,6 +234,17 @@
     <button class="pbtn" id="authSubmit" style="margin-top:0">로그인</button>
     <div class="auth-toggle"><span id="authToggleText">계정이 없으신가요?</span><a id="authToggle">회원가입</a></div>
     <button class="auth-close" id="authClose">닫기</button>
+  </div>
+</div>
+
+<div class="modal" id="histModal" style="display:none">
+  <div class="modal-card hist-card">
+    <div class="modal-title">📈 썸 히스토리</div>
+    <div class="modal-sub">상대별 썸 온도가 어떻게 변해왔는지 확인해 보세요.</div>
+    <div class="hist-chips" id="histChips"></div>
+    <div id="histChart"></div>
+    <div id="histList"></div>
+    <button class="auth-close" id="histClose">닫기</button>
   </div>
 </div>
 
@@ -235,6 +269,7 @@
   var loading = false, premium = false, premiumExp = null;
   var mode = "text", imageData = null;
   var lastConvo = "", lastAvoid = [];
+  var partnerVal = "";
   var currentUser = null, currentAccessToken = null, authMode = "login";
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -259,6 +294,11 @@
   var changeImg = document.getElementById("changeImg");
   var situationArea = document.getElementById("situationArea");
   var account = document.getElementById("account");
+  var histModal = document.getElementById("histModal");
+  var histChips = document.getElementById("histChips");
+  var histChart = document.getElementById("histChart");
+  var histList = document.getElementById("histList");
+  var histClose = document.getElementById("histClose");
 
   var authModal = document.getElementById("authModal");
   var authTitle = document.getElementById("authTitle");
@@ -286,6 +326,13 @@
   function renderSituation() {
     situationArea.innerHTML = "";
     if (premium) {
+      situationArea.appendChild(el("span", "lbl mt", "상대 별명 (선택) — 히스토리에 저장돼요"));
+      var pIn = el("input", "memo");
+      pIn.placeholder = "예: 헬스장 그분, 소개팅 J씨";
+      pIn.style.marginTop = "0";
+      pIn.value = partnerVal;
+      pIn.oninput = function () { partnerVal = pIn.value; };
+      situationArea.appendChild(pIn);
       situationArea.appendChild(el("span", "lbl mt", "상황 (정밀 분석)"));
       var pills = el("div", "pills");
       SITUATIONS.forEach(function (s) {
@@ -297,7 +344,7 @@
     } else {
       var locked = el("div", "locked");
       locked.appendChild(el("div", "locked-h", "🔒 상황별 정밀 분석"));
-      locked.appendChild(el("p", null, "상대 성향·다음 단계 전략·주의할 점까지. 첫 연락·데이트 신청·재회 등 상황에 딱 맞춰 분석해요."));
+      locked.appendChild(el("p", null, "상대 성향·다음 단계 전략·주의할 점까지. 첫 연락·데이트 신청·재회 등 상황에 딱 맞춰 분석하고, 기록은 상대별 온도 그래프로 저장돼요."));
       var lb = el("button", "locked-btn", "프리미엄에서 열기 · 2,900원");
       lb.onclick = startPayment;
       locked.appendChild(lb);
@@ -353,6 +400,11 @@
     account.innerHTML = "";
     if (currentUser) {
       account.appendChild(el("span", "acc-email", "📧 " + (currentUser.email || "로그인됨")));
+      if (premium) {
+        var hb = el("button", "acc-btn", "📈 내 기록");
+        hb.onclick = openHistory;
+        account.appendChild(hb);
+      }
       var out = el("button", "acc-btn", "로그아웃");
       out.onclick = function () { sb.auth.signOut(); };
       account.appendChild(out);
@@ -407,12 +459,12 @@
   }
 
   function refreshPremiumFromDB() {
-    if (!currentUser) { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); return Promise.resolve(); }
+    if (!currentUser) { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); renderAccount(); return Promise.resolve(); }
     return sb.from("subscriptions").select("expires_at").maybeSingle().then(function (q) {
       if (q.data && new Date(q.data.expires_at).getTime() > Date.now()) { premium = true; premiumExp = new Date(q.data.expires_at).getTime(); }
       else { premium = false; premiumExp = null; }
-      updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI();
-    }).catch(function () { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); });
+      updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); renderAccount();
+    }).catch(function () { premium = false; premiumExp = null; updateQuota(); renderSituation(); updatePremiumBtn(); updateRegenUI(); renderAccount(); });
   }
 
   function updatePremiumBtn() {
@@ -435,6 +487,81 @@
   }
 
   sb.auth.onAuthStateChange(function (_event, session) { applySession(session); });
+
+  // ===== 썸 히스토리 =====
+  histClose.onclick = function () { histModal.style.display = "none"; };
+  var histData = [], histSel = "전체";
+
+  function partnerName(p) { return (p && p.trim()) ? p.trim() : "미지정"; }
+
+  function openHistory() {
+    histModal.style.display = "flex";
+    histChips.innerHTML = ""; histChart.innerHTML = "";
+    histList.innerHTML = '<p class="hist-empty">불러오는 중…</p>';
+    sb.from("analyses").select("partner,score,temperature,created_at").order("created_at", { ascending: true }).limit(300)
+      .then(function (q) {
+        if (q && q.error) { histList.innerHTML = '<p class="hist-empty">기록을 불러오지 못했어요.<br>(Supabase에 analyses 테이블 SQL을 실행했는지 확인해 주세요)</p>'; return; }
+        histData = (q && q.data) ? q.data : [];
+        histSel = "전체";
+        renderHistory();
+      });
+  }
+
+  function renderHistory() {
+    histChips.innerHTML = "";
+    var names = ["전체"];
+    histData.forEach(function (r) { var n = partnerName(r.partner); if (names.indexOf(n) < 0) names.push(n); });
+    names.forEach(function (n) {
+      var b = el("button", "pill" + (n === histSel ? " on" : ""), n);
+      b.onclick = function () { histSel = n; renderHistory(); };
+      histChips.appendChild(b);
+    });
+
+    var rows = histData.filter(function (r) { return histSel === "전체" || partnerName(r.partner) === histSel; });
+    drawChart(rows);
+
+    histList.innerHTML = "";
+    if (!rows.length) {
+      histList.innerHTML = '<p class="hist-empty">아직 기록이 없어요.<br>프리미엄 상태로 분석하면 자동으로 저장돼요 :)</p>';
+      return;
+    }
+    rows.slice().reverse().slice(0, 30).forEach(function (r) {
+      var it = el("div", "hist-item");
+      var lb = el("div");
+      lb.appendChild(el("div", null, r.temperature || "썸 온도"));
+      var d = new Date(r.created_at);
+      lb.appendChild(el("div", "hist-meta", (d.getMonth() + 1) + "/" + d.getDate() + " · " + partnerName(r.partner)));
+      it.appendChild(lb);
+      it.appendChild(el("span", "hist-score", r.score + "점"));
+      histList.appendChild(it);
+    });
+  }
+
+  function drawChart(rows) {
+    histChart.innerHTML = "";
+    if (rows.length < 2) {
+      if (rows.length === 1) histChart.innerHTML = '<p class="hist-empty">그래프는 기록이 2개부터 그려져요 — 한 번 더 분석해 보세요!</p>';
+      return;
+    }
+    var pts = rows.slice(-24);
+    var W = 320, H = 140, T = 12, B = 24, L = 10, R = 10;
+    var innerW = W - L - R, innerH = H - T - B;
+    function fx(i) { return L + innerW * i / (pts.length - 1); }
+    function fy(s) { return T + innerH * (1 - Math.max(0, Math.min(100, s)) / 100); }
+    var line = pts.map(function (r, i) { return fx(i).toFixed(1) + "," + fy(r.score).toFixed(1); }).join(" ");
+    var dots = pts.map(function (r, i) { return '<circle cx="' + fx(i).toFixed(1) + '" cy="' + fy(r.score).toFixed(1) + '" r="3.2" fill="#FFB36B"></circle>'; }).join("");
+    var grid = [0, 50, 100].map(function (g) {
+      return '<line x1="' + L + '" y1="' + fy(g).toFixed(1) + '" x2="' + (W - R) + '" y2="' + fy(g).toFixed(1) + '" stroke="rgba(255,255,255,.08)" stroke-width="1"></line>'
+        + '<text x="' + (W - R) + '" y="' + (fy(g) - 3).toFixed(1) + '" text-anchor="end" font-size="8.5" fill="#9E92B6">' + g + '</text>';
+    }).join("");
+    var d1 = new Date(pts[0].created_at), d2 = new Date(pts[pts.length - 1].created_at);
+    var wrap = el("div", "hist-chart");
+    wrap.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet">' + grid
+      + '<polyline points="' + line + '" fill="none" stroke="#FF6F91" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>'
+      + dots + '</svg>'
+      + '<div class="hist-dates"><span>' + (d1.getMonth() + 1) + "/" + d1.getDate() + '</span><span>' + (d2.getMonth() + 1) + "/" + d2.getDate() + '</span></div>';
+    histChart.appendChild(wrap);
+  }
 
   // ===== 결제 =====
   function startPayment() {
@@ -500,7 +627,7 @@
     setLoading(true);
     var typing = el("div", "typing"); typing.innerHTML = "<span></span><span></span><span></span>"; resultsEl.appendChild(typing);
 
-    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value, situation: selSituation, accessToken: currentAccessToken };
+    var payload = { relationship: selRel, tone: selTone, memo: memoEl.value, situation: selSituation, partner: partnerVal.trim().slice(0, 30), accessToken: currentAccessToken };
     if (mode === "image") { payload.image = imageData; payload.mediaType = "image/jpeg"; }
     else { payload.convo = convoEl.value; }
 
