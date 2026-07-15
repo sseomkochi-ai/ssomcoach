@@ -73,6 +73,7 @@ module.exports = async function handler(req, res) {
   var image = body.image || null;
   var mediaType = body.mediaType || "image/jpeg";
   var situation = body.situation || "";
+  var partner = (typeof body.partner === "string" ? body.partner : "").trim().slice(0, 30);
   var regen = !!body.regen;
   var avoid = Array.isArray(body.avoid) ? body.avoid.filter(function (a) { return typeof a === "string" && a.trim(); }).slice(0, 9) : [];
   var hasImage = !!image;
@@ -155,7 +156,34 @@ module.exports = async function handler(req, res) {
 
     var data = await callClaude(model, userContent, hasImage ? 1500 : 1200);
     if (data.error) { res.status(500).json({ error: data.error.message || "AI 요청 실패" }); return; }
-    res.status(200).json(parseJsonText(data));
+    var parsed = parseJsonText(data);
+
+    // 프리미엄 사용자의 분석 결과를 히스토리에 저장
+    if (isPremium && userId) {
+      try {
+        var sc = parseInt(parsed.score, 10);
+        if (!isNaN(sc)) {
+          await fetch(SUPABASE_URL + "/rest/v1/analyses", {
+            method: "POST",
+            headers: {
+              "apikey": SERVICE_ROLE,
+              "Authorization": "Bearer " + SERVICE_ROLE,
+              "Content-Type": "application/json",
+              "Prefer": "return=minimal"
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              partner: partner,
+              score: Math.max(0, Math.min(100, sc)),
+              temperature: String(parsed.temperature || "").slice(0, 80),
+              verdict: String(parsed.verdict || "").slice(0, 300)
+            })
+          });
+        }
+      } catch (e) { /* 저장 실패해도 분석 결과는 정상 반환 */ }
+    }
+
+    res.status(200).json(parsed);
   } catch (err) {
     res.status(500).json({ error: "분석 처리 중 오류가 났어요." });
   }
